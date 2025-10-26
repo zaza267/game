@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tebak 4 Angka — vs Bot</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #ffe6f0, #ffd7e5);
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; margin: 0;
+  }
+  .screen {
+    display: none; text-align: center; background: #fff;
+    padding: 24px; border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    width: 380px; max-height: 90vh; overflow-y: auto;
+    position: relative;
+  }
+  .active { display: block; }
+
+  h1 { color: #b30057; font-size: 24px; margin-bottom: 12px; }
+  h2 { color: #b30057; font-size: 18px; margin-top: 16px; }
+
+  input[type=text] {
+    text-align: center; width: 80%; font-size: 20px; padding: 10px;
+    margin: 8px; border: 2px solid #ffcce0; border-radius: 10px;
+  }
+  button {
+    margin-top: 14px; background: #ff7aa2; color: white; border: none;
+    border-radius: 8px; padding: 10px 18px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: 0.2s;
+  }
+  button:hover { background: #ff5d8a; transform: scale(1.05); }
+
+  .num-btn {
+    width: 50px; height: 50px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; border: 1px solid #eee; cursor: pointer;
+    margin: 6px; background: #fff0f5; color: #b30057;
+    transition: all .2s;
+  }
+  .num-btn:hover { background: #ffd6e8; transform: scale(1.1); }
+
+  .table-secret {
+    display: flex; justify-content: center; gap: 8px; margin: 10px 0 20px;
+  }
+  .table-secret div {
+    background: #d2b48c; color: white; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; border-radius: 6px; font-weight: 700;
+  }
+
+  .bot-box {
+    background: linear-gradient(135deg, #ffccd5, #d2b48c);
+    color: #5a2c2c; border-radius: 10px; padding: 20px;
+    font-size: 26px; font-weight: 800; width: 160px; margin: 12px auto;
+  }
+
+  .history {
+    background: #fff6f9; border-radius: 10px;
+    padding: 10px; margin-top: 12px;
+    text-align: left; max-height: 180px; overflow-y: auto;
+    font-size: 14px; line-height: 1.6;
+  }
+  .history span { color: #b30057; font-weight: 600; }
+
+  .rules {
+    text-align: left;
+    background: #fff0f5;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 14px;
+    color: #5a2c2c;
+  }
+
+  .guess-grid {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .guess-grid input {
+    width: 50px; height: 50px;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: bold;
+    border: 2px solid #ffb6c1;
+    color: #b30057;
+    text-align: center;
+  }
+  .guess-grid input:focus {
+    outline: none;
+    border-color: #ff5d8a;
+    background: #fff0f5;
+  }
+
+  #playerNameDisplay {
+    position: absolute;
+    top: 10px; left: 14px;
+    color: #b30057; font-weight: 700; font-size: 14px;
+  }
+
+  #errorScreen {
+    background: #8b0000; /* merah darah */
+    color: #fff;
+    text-align: center;
+  }
+  #errorScreen h1 { color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- Nama pemain -->
+<div id="playerNameDisplay"></div>
+
+<!-- Layar sambutan -->
+<div id="welcome" class="screen active">
+  <h1>🎮 Selamat Datang di Game Tebak 4 Angka 🎀</h1>
+  <p>Masukkan namamu dan angka rahasiamu dulu ya!</p>
+  <input id="name" type="text" placeholder="Nama Pemain"><br>
+  <input id="secret" type="text" maxlength="4" placeholder="1234"><br>
+  <button onclick="startGame()">Mulai Game</button>
+
+  <div class="rules">
+    <h2>📜 Peraturan & Petunjuk:</h2>
+    <ul>
+      <li>Gunakan angka <b>1–9</b> (tidak boleh 0 dan tidak boleh ganda).</li>
+      <li>Masukkan <b>4 angka rahasia</b> untuk disembunyikan dari bot.</li>
+      <li>Pemain dan bot bergantian menebak angka satu sama lain.</li>
+      <li>Setiap tebakan akan diberi hasil jumlah angka & posisi yang benar.</li>
+      <li>Jika hasil <b>4</b>, maka pemain yang menebak <b>MENANG!</b> 🎉</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Layar tebakan pemain -->
+<div id="playerTurn" class="screen">
+  <h1>Tebak Angka Bot 🎯</h1>
+  <div id="guessArea" class="guess-grid">
+    <input id="g1" maxlength="1">
+    <input id="g2" maxlength="1">
+    <input id="g3" maxlength="1">
+    <input id="g4" maxlength="1">
+  </div>
+  <button id="guessBtn" onclick="submitGuess()">Kirim Tebakan</button>
+  <p id="result"></p>
+  <button id="doneBtn" style="display:none;" onclick="afterBotFeedback()">Sudah ✅</button>
+
+  <h3>Riwayat Tebakanmu:</h3>
+  <div class="history" id="playerHistory"></div>
+</div>
+
+<!-- Layar giliran bot -->
+<div id="botTurn" class="screen" style="background:linear-gradient(135deg,#ffe6f0,#d2b48c);">
+  <h1>Giliran Bot 🔮</h1>
+  <p>Angka rahasiamu:</p>
+  <div id="playerSecretTable" class="table-secret"></div>
+  <div class="bot-box" id="botGuess">----</div>
+  <p>Beri tahu bot berapa angka yang benar (posisi & angka):</p>
+  <div id="feedbackArea"></div>
+  <button id="nextTurnBtn" style="display:none;" onclick="nextTurn()">Sudah ✅</button>
+
+  <h3>Riwayat Tebakan Bot:</h3>
+  <div class="history" id="botHistory"></div>
+</div>
+
+<!-- Layar akhir -->
+<div id="endScreen" class="screen">
+  <h1 id="endMsg"></h1>
+  <button onclick="location.reload()">Main Lagi 🔁</button>
+</div>
+
+<!-- Layar kesalahan -->
+<div id="errorScreen" class="screen">
+  <h1 id="errorMsg"></h1>
+  <button onclick="closeError()">Baiklah 😅</button>
+</div>
+
+<script>
+const all=[];
+(function gen(){
+  const d=['1','2','3','4','5','6','7','8','9'];
+  function back(c){if(c.length===4){all.push(c.join(''));return}
+  for(const x of d)if(!c.includes(x)){c.push(x);back(c);c.pop();}}
+  back([]);
+})();
+
+let playerSecret="",botSecret="",possible=[...all],botLast="",playerName="";
+const playerHist=document.getElementById('playerHistory');
+const botHist=document.getElementById('botHistory');
+
+function isValid(s){return /^[1-9]{4}$/.test(s)&&new Set(s).size===4}
+function match(a,b){let c=0;for(let i=0;i<4;i++)if(a[i]===b[i])c++;return c}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');}
+
+function error(msg){
+  document.getElementById('errorMsg').textContent=msg;
+  show('errorScreen');
+}
+function closeError(){
+  if(playerSecret) show('playerTurn');
+  else show('welcome');
+}
+
+function startGame(){
+  const n=document.getElementById('name').value.trim();
+  const sec=document.getElementById('secret').value.trim();
+  if(!n) return error("Nama tidak boleh kosong!");
+  if(!isValid(sec)) return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
+  playerName=n;
+  document.getElementById('playerNameDisplay').textContent="👤 "+playerName;
+  playerSecret=sec;
+  botSecret=all[Math.floor(Math.random()*all.length)];
+  possible=[...all];
+  const tbl=document.getElementById('playerSecretTable');
+  tbl.innerHTML="";
+  for(let ch of playerSecret){const cell=document.createElement('div');cell.textContent=ch;tbl.appendChild(cell);}
+  show('playerTurn');
+  g1.focus();
+}
+
+function submitGuess(){
+  const g=[g1.value,g2.value,g3.value,g4.value].join('');
+  if(!isValid(g))return error("Tebakan harus 4 angka unik (1–9, tanpa 0)!");
+  const m=match(g,botSecret);
+  document.getElementById('result').textContent=`Hasil bot: ${m}`;
+  playerHist.innerHTML+=`<div><span>${g}</span> → ${m}</div>`;
+  document.getElementById('guessBtn').style.display='none'; // cegah curang
+  if(m===4){end("Kamu menang! 🎉");return;}
+  document.getElementById('doneBtn').style.display='inline-block';
+}
+
+function afterBotFeedback(){
+  document.getElementById('doneBtn').style.display='none';
+  clearGuess();
+  showBotTurn();
+}
+
+function showBotTurn(){
+  botLast=possible[Math.floor(Math.random()*possible.length)];
+  document.getElementById('botGuess').textContent=botLast;
+  const fb=document.getElementById('feedbackArea');
+  fb.innerHTML='';
+  document.getElementById('nextTurnBtn').style.display='none';
+  for(let i=0;i<=4;i++){
+    const b=document.createElement('div');
+    b.className='num-btn';
+    b.textContent=i;
+    b.onclick=()=>feedback(i);
+    fb.appendChild(b);
+  }
+  show('botTurn');
+}
+
+function feedback(f){
+  if(f<0||f>4)return error("Feedback tidak valid!");
+  const realMatch=match(botLast,playerSecret);
+  if(f!==realMatch){
+    end("Bot menang karena kamu memberi feedback salah! 🤨");
+    return;
+  }
+  const filtered=possible.filter(x=>match(x,botLast)===f);
+  if(filtered.length===0)return error("Feedbackmu tidak konsisten!");
+  botHist.innerHTML+=`<div><span>${botLast}</span> → ${f}</div>`;
+  if(f===4)return end("Bot menang! 🤖");
+  possible=filtered;
+  document.getElementById('nextTurnBtn').style.display='inline-block';
+}
+
+function nextTurn(){
+  show('playerTurn');
+  document.getElementById('guessBtn').style.display='inline-block';
+  clearGuess();
+  g1.focus();
+}
+
+function clearGuess(){
+  g1.value=g2.value=g3.value=g4.value='';
+  document.getElementById('result').textContent='';
+}
+
+function end(msg){
+  document.getElementById('endMsg').textContent=msg;
+  show('endScreen');
+}
+
+/* Navigasi antar kotak input otomatis */
+const inputs=[g1,g2,g3,g4];
+inputs.forEach((input,idx)=>{
+  input.addEventListener('input',()=>{if(input.value.length===1 && idx<3) inputs[idx+1].focus();});
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();if(idx<3) inputs[idx+1].focus();else submitGuess();}
+    if(e.key==='Backspace' && !input.value && idx>0){inputs[idx-1].focus();}
+  });
+});
+
+/* Tekan enter di halaman awal langsung mulai game */
+document.getElementById('secret').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();startGame();}
+});
+</script>
+</body>
+</html>
