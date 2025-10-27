@@ -5,174 +5,127 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Tebak 4 Angka — vs Bot</title>
 <style>
-  body {
-    font-family: "Poppins", sans-serif;
-    background: linear-gradient(135deg, #ffe6f0, #ffd7e5);
-    display: flex; align-items: center; justify-content: center;
-    height: 100vh; margin: 0;
-  }
-  .screen {
-    display: none; text-align: center; background: #fff;
-    padding: 24px; border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    width: 380px; max-height: 90vh; overflow-y: auto;
-    position: relative;
-  }
-  .active { display: block; }
+/* ===== CSS utama ===== */
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #ffe6f0, #ffd7e5);
+  display: flex; align-items: center; justify-content: center;
+  height: 100vh; margin: 0;
+}
+.screen { display: none; text-align: center; background: #fff;
+  padding: 24px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  width: 380px; max-height: 90vh; overflow-y: auto; position: relative;
+}
+.active { display: block; }
+h1 { color: #b30057; font-size: 24px; margin-bottom: 12px; }
+input[type=text] { text-align: center; width: 80%; font-size: 20px; padding: 10px;
+  margin: 8px; border: 2px solid #ffcce0; border-radius: 10px;
+}
+button { background: #ff7aa2; color: white; border: none; border-radius: 8px;
+  padding: 10px 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: 0.2s;
+}
+button:hover { background: #ff5d8a; transform: scale(1.05); }
 
-  h1 { color: #b30057; font-size: 24px; margin-bottom: 12px; }
-  h2 { color: #b30057; font-size: 18px; margin-top: 16px; }
+.num-btn { width: 50px; height: 50px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; border: 1px solid #eee; cursor: pointer;
+  margin: 6px; background: #fff0f5; color: #b30057; transition: all .2s; }
+.num-btn:hover { background: #ffd6e8; transform: scale(1.1); }
 
-  input[type=text] {
-    text-align: center; width: 80%; font-size: 20px; padding: 10px;
-    margin: 8px; border: 2px solid #ffcce0; border-radius: 10px;
-  }
-  button {
-    background: #ff7aa2; color: white; border: none;
-    border-radius: 8px; padding: 10px 18px; font-weight: 600; cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: 0.2s;
-  }
-  button:hover { background: #ff5d8a; transform: scale(1.05); }
+.table-secret { display: flex; justify-content: center; gap: 8px; margin: 10px 0 20px; }
+.table-secret div { background: #d2b48c; color: white; width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; border-radius: 6px; font-weight: 700; }
 
-  .num-btn {
-    width: 50px; height: 50px; border-radius: 8px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-weight: 700; border: 1px solid #eee; cursor: pointer;
-    margin: 6px; background: #fff0f5; color: #b30057;
-    transition: all .2s;
-  }
-  .num-btn:hover { background: #ffd6e8; transform: scale(1.1); }
+.bot-box { background: linear-gradient(135deg, #ffccd5, #d2b48c);
+  color: #5a2c2c; border-radius: 10px; padding: 20px;
+  font-size: 26px; font-weight: 800; width: 160px; margin: 12px auto; }
 
-  .table-secret {
-    display: flex; justify-content: center; gap: 8px; margin: 10px 0 20px;
-  }
-  .table-secret div {
-    background: #d2b48c; color: white; width: 40px; height: 40px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; border-radius: 6px; font-weight: 700;
-  }
+.history { background: #fff6f9; border-radius: 10px; padding: 10px; margin-top: 12px;
+  text-align: left; max-height: 180px; overflow-y: auto; font-size: 14px; line-height: 1.6; }
+.history span { color: #b30057; font-weight: 600; }
 
-  .bot-box {
-    background: linear-gradient(135deg, #ffccd5, #d2b48c);
-    color: #5a2c2c; border-radius: 10px; padding: 20px;
-    font-size: 26px; font-weight: 800; width: 160px; margin: 12px auto;
-  }
+.rules { text-align: left; background: #fff0f5; border-radius: 10px;
+  padding: 12px 16px; margin-top: 14px; font-size: 14px; color: #5a2c2c; }
 
-  .history {
-    background: #fff6f9; border-radius: 10px;
-    padding: 10px; margin-top: 12px;
-    text-align: left; max-height: 180px; overflow-y: auto;
-    font-size: 14px; line-height: 1.6;
-  }
-  .history span { color: #b30057; font-weight: 600; }
+.guess-grid { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+.guess-grid input { width: 50px; height: 50px; border-radius: 10px;
+  font-size: 22px; font-weight: bold; border: 2px solid #ffb6c1;
+  color: #b30057; text-align: center; }
 
-  .rules {
-    text-align: left;
-    background: #fff0f5;
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin-top: 14px;
-    font-size: 14px;
-    color: #5a2c2c;
-  }
+#playerNameDisplay { position: absolute; top: 12px; left: 12px; color: #b30057; font-weight: 700; font-size: 14px; }
 
-  .guess-grid {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin: 12px 0;
-  }
-  .guess-grid input {
-    width: 50px; height: 50px;
-    border-radius: 10px;
-    font-size: 22px;
-    font-weight: bold;
-    border: 2px solid #ffb6c1;
-    color: #b30057;
-    text-align: center;
-  }
+.surrender-btn { position: absolute; top: 10px; right: 14px;
+  background: #ff5d8a; color: white; border-radius: 8px; padding: 6px 10px;
+  font-size: 12px; cursor: pointer; }
 
-  #playerNameDisplay {
-    position: absolute;
-    top: 10px; left: 14px;
-    color: #b30057; font-weight: 700; font-size: 14px;
-  }
+/* Lightbox popup tengah */
+#lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(255, 240, 245, 0.3); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 999; }
+#lightbox img { width: 320px; max-width: 90%; border-radius: 16px; border: 4px solid #ff7aa2;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2); animation: pop .3s ease; }
+@keyframes pop {from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);} }
 
-  .surrender-btn {
-    position: absolute;
-    top: 10px; right: 14px;
-    background: #ff5d8a; color: white;
-    border-radius: 8px; padding: 6px 10px;
-    font-size: 12px; cursor: pointer;
-  }
+.verse { margin-top: 12px; background: #fff0f5; border-radius: 10px; padding: 10px; color: #5a2c2c;
+  font-size: 13px; font-style: italic; }
 
-  /* Lightbox popup tengah */
-  #lightbox {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(255, 240, 245, 0.3);
-    backdrop-filter: blur(4px);
-    align-items: center; justify-content: center;
-    z-index: 999;
-  }
-  #lightbox img {
-    width: 320px; max-width: 90%;
-    border-radius: 16px;
-    border: 4px solid #ff7aa2;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    animation: pop .3s ease;
-  }
-  @keyframes pop {from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);} }
+#endScreen img, #cheatScreen img, #surrenderScreen img { width: 160px; height: 160px; border-radius: 50%;
+  margin: 16px 0; object-fit: cover; border: 4px solid #ff7aa2; cursor: pointer; transition: 0.3s; }
+#endScreen img:hover, #cheatScreen img:hover, #surrenderScreen img:hover { transform: scale(1.05); }
 
-  .verse {
-    margin-top: 12px;
-    background: #fff0f5;
-    border-radius: 10px;
-    padding: 10px;
-    color: #5a2c2c;
-    font-size: 13px;
-    font-style: italic;
-  }
+#endDetails, #cheatDetails, #surrenderDetails { background: #fff0f5; border-radius: 10px; padding: 10px; color: #5a2c2c; font-weight: 600; margin-top: 8px; }
 
-  #endScreen img, #cheatScreen img, #surrenderScreen img {
-    width: 160px; height: 160px;
-    border-radius: 50%;
-    margin: 16px 0;
-    object-fit: cover;
-    border: 4px solid #ff7aa2;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  #endScreen img:hover, #cheatScreen img:hover, #surrenderScreen img:hover {
-    transform: scale(1.05);
-  }
+#errorScreen { background: #8b0000; color: #fff; text-align: center; }
 
-  #endDetails, #cheatDetails, #surrenderDetails {
-    background: #fff0f5;
-    border-radius: 10px;
-    padding: 10px;
-    color: #5a2c2c;
-    font-weight: 600;
-    margin-top: 8px;
-  }
+.btn-row { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
 
-  #errorScreen {
-    background: #8b0000; color: #fff; text-align: center;
-  }
+/* ===== Switch pojok kiri atas ===== */
+#topSwitches { position: fixed; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+.switch { position: relative; display: inline-block; width: 60px; height: 28px; }
+.switch input { display: none; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ffb6c1; border-radius: 34px; transition: 0.3s; }
+.slider:before { position: absolute; content: "🌙"; height: 22px; width: 22px;
+  left: 3px; bottom: 3px; background-color: white; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; }
+input:checked + .slider { background-color: #b30057; }
+input:checked + .slider:before { transform: translateX(32px); content: "☀️"; }
 
-  .btn-row {
-    display: flex; justify-content: center; gap: 10px; margin-top: 14px;
-  }
+.slider.music { background-color: #ffd1dc; }
+.slider.music:before { content: "🎵"; }
+input:checked + .slider.music:before { content: "🔊"; }
+
+/* Mode gelap */
+body.dark { background: linear-gradient(135deg, #2b002b, #4a004a); color: #f8d8e8; }
+body.dark .screen { background: #3a003a; color: #f8d8e8; box-shadow: 0 6px 15px rgba(0,0,0,0.4); }
+body.dark button { background: #a34a78; color: white; }
+body.dark button:hover { background: #c15a8f; }
+body.dark .history { background: #4a004a; color: #fbd7e8; }
+body.dark .rules { background: #4a004a; color: #ffe6f0; }
 </style>
 </head>
 <body>
 
+<!-- Switch Dark Mode & Musik -->
+<div id="topSwitches">
+  <label class="switch">
+    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+    <span class="slider"></span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" id="musicToggle" onchange="toggleMusic()">
+    <span class="slider music"></span>
+  </label>
+</div>
+
+<!-- Audio Musik -->
+<audio id="bgMusic" src="Kasih Putih (Acoustic).mp3" loop></audio>
+
+<!-- Nama pemain -->
 <div id="playerNameDisplay"></div>
 
-<!-- Layar sambutan -->
+<!-- ===== Layar sambutan ===== -->
 <div id="welcome" class="screen active">
   <h1>🎮 Selamat Datang di Game Tebak 4 Angka 🎀</h1>
   <p>Masukkan namamu dan angka rahasiamu dulu ya!</p>
@@ -182,7 +135,6 @@
     <button onclick="showHistoryScreen()">📜 Riwayat</button>
     <button onclick="startGame()">Mulai Game ▶️</button>
   </div>
-
   <div class="rules">
     <h2>📜 Peraturan & Petunjuk:</h2>
     <ul>
@@ -218,7 +170,6 @@
   <button id="guessBtn" onclick="submitGuess()">Kirim Tebakan</button>
   <p id="result"></p>
   <button id="doneBtn" style="display:none;" onclick="afterBotFeedback()">Sudah ✅</button>
-
   <h3>Riwayat Tebakanmu:</h3>
   <div class="history" id="playerHistory"></div>
 </div>
@@ -233,7 +184,6 @@
   <p>Beri tahu bot berapa angka yang benar:</p>
   <div id="feedbackArea"></div>
   <button id="nextTurnBtn" style="display:none;" onclick="nextTurn()">Sudah ✅</button>
-
   <h3>Riwayat Tebakan Bot:</h3>
   <div class="history" id="botHistory"></div>
 </div>
@@ -243,8 +193,7 @@
   <img src="IMG-20251006-WA0031.jpg" alt="Jangan Curang" onclick="openLightbox(this)">
   <h1>🚫 Jangan Curang!</h1>
   <div id="cheatDetails">
-    <p>Kamu memberi feedback yang salah... 😔<br>
-    Ingatlah untuk bermain jujur ya!</p>
+    <p>Kamu memberi feedback yang salah... 😔<br>Ingatlah untuk bermain jujur ya!</p>
     <blockquote><b>Amsal 12:22</b> — "Bibir dusta adalah kekejian bagi TUHAN, tetapi orang yang berlaku setia dikenan-Nya."</blockquote>
   </div>
   <div class="verse">💡 “Hendaklah integritasmu nyata di setiap hal kecil.”</div>
@@ -281,26 +230,23 @@
 </div>
 
 <script>
-/* popup tengah */
-function openLightbox(img){
-  document.getElementById('lightboxImg').src=img.src;
-  document.getElementById('lightbox').style.display='flex';
-}
+/* ===== Script game & switch ===== */
+function openLightbox(img){document.getElementById('lightboxImg').src=img.src;document.getElementById('lightbox').style.display='flex';}
+function toggleDarkMode(){document.body.classList.toggle("dark");}
+function toggleMusic(){const audio=document.getElementById("bgMusic");if(document.getElementById("musicToggle").checked) audio.play();else audio.pause();}
 
-const all=[]; (function gen(){
-  const d=['1','2','3','4','5','6','7','8','9'];
-  function back(c){if(c.length===4){all.push(c.join(''));return}
-  for(const x of d)if(!c.includes(x)){c.push(x);back(c);c.pop();}}
-  back([]);
-})();
+/* Generate semua kombinasi 4 angka unik */
+const all=[]; (function gen(){const d=['1','2','3','4','5','6','7','8','9'];
+function back(c){if(c.length===4){all.push(c.join(''));return}for(const x of d)if(!c.includes(x)){c.push(x);back(c);c.pop();} }
+back([]);})();
+
 let playerSecret="",botSecret="",possible=[...all],botLast="",playerName="";
 const playerHist=document.getElementById('playerHistory');
 const botHist=document.getElementById('botHistory');
 
 function isValid(s){return /^[1-9]{4}$/.test(s)&&new Set(s).size===4}
 function match(a,b){let c=0;for(let i=0;i<4;i++)if(a[i]===b[i])c++;return c}
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-document.getElementById(id).classList.add('active');}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function error(msg){document.getElementById('errorMsg').textContent=msg;show('errorScreen');}
 function closeError(){if(playerSecret)show('playerTurn');else show('welcome');}
 
@@ -313,8 +259,7 @@ function startGame(){
   botSecret=all[Math.floor(Math.random()*all.length)];
   possible=[...all];
   document.getElementById('playerNameDisplay').textContent="👤 "+playerName;
-  const tbl=document.getElementById('playerSecretTable');
-  tbl.innerHTML=""; for(let ch of playerSecret){const cell=document.createElement('div');cell.textContent=ch;tbl.appendChild(cell);}
+  const tbl=document.getElementById('playerSecretTable'); tbl.innerHTML=""; for(let ch of playerSecret){const cell=document.createElement('div');cell.textContent=ch;tbl.appendChild(cell);}
   show('playerTurn'); g1.focus();
 }
 
@@ -329,24 +274,14 @@ function submitGuess(){
   document.getElementById('doneBtn').style.display='inline-block';
 }
 
-function afterBotFeedback(){
-  document.getElementById('doneBtn').style.display='none';
-  clearGuess(); showBotTurn();
-}
-
+function afterBotFeedback(){document.getElementById('doneBtn').style.display='none';clearGuess();showBotTurn();}
 function showBotTurn(){
   botLast=possible[Math.floor(Math.random()*possible.length)];
   document.getElementById('botGuess').textContent=botLast;
-  const fb=document.getElementById('feedbackArea');
-  fb.innerHTML=''; document.getElementById('nextTurnBtn').style.display='none';
-  for(let i=0;i<=4;i++){
-    const b=document.createElement('div');
-    b.className='num-btn'; b.textContent=i; b.onclick=()=>feedback(i);
-    fb.appendChild(b);
-  }
+  const fb=document.getElementById('feedbackArea'); fb.innerHTML=''; document.getElementById('nextTurnBtn').style.display='none';
+  for(let i=0;i<=4;i++){const b=document.createElement('div');b.className='num-btn';b.textContent=i;b.onclick=()=>feedback(i);fb.appendChild(b);}
   show('botTurn');
 }
-
 function feedback(f){
   const realMatch=match(botLast,playerSecret);
   if(f!==realMatch){show('cheatScreen');return;}
@@ -355,51 +290,40 @@ function feedback(f){
   if(f===4)return end("Bot menang! 🤖", false);
   possible=filtered; document.getElementById('nextTurnBtn').style.display='inline-block';
 }
-
 function forgiveCheat(){ show('botTurn'); }
-
 function confirmSurrender(){ show('surrenderScreen'); }
 function cancelSurrender(){ show(playerSecret && botLast ? 'botTurn':'playerTurn'); }
 function giveUp(){ end("Kamu menyerah 😔", false); }
-
-function nextTurn(){
-  show('playerTurn'); document.getElementById('guessBtn').style.display='inline-block';
-  clearGuess(); g1.focus();
-}
-
-function clearGuess(){
-  g1.value=g2.value=g3.value=g4.value=''; document.getElementById('result').textContent='';
-}
+function nextTurn(){ show('playerTurn'); document.getElementById('guessBtn').style.display='inline-block'; clearGuess(); g1.focus(); }
+function clearGuess(){ g1.value=g2.value=g3.value=g4.value=''; document.getElementById('result').textContent=''; }
 
 function end(msg,win){
   const img=document.getElementById('endImg');
   img.src=win?"IMG-20251016-WA0037.jpg":"motion_photo_7499955795629952970.jpg";
   document.getElementById('endMsg').textContent=msg;
-  document.getElementById('endDetails').innerHTML=
-    `<p>🔢 Angka kamu: <b>${playerSecret}</b><br>🤖 Angka bot: <b>${botSecret}</b></p>`;
+  document.getElementById('endDetails').innerHTML=`<p>🔢 Angka kamu: <b>${playerSecret}</b><br>🤖 Angka bot: <b>${botSecret}</b></p>`;
   const verse=document.getElementById('endVerse');
-  if(win){
-    verse.innerHTML = "📖 <b>Roma 8:37</b> — 'Tetapi dalam semuanya itu kita lebih dari pada orang-orang yang menang, oleh Dia yang telah mengasihi kita.'";
-  } else {
-    verse.innerHTML = "📖 <b>Yeremia 29:11</b> — 'Sebab Aku ini mengetahui rancangan-rancangan apa yang ada pada-Ku mengenai kamu, demikianlah firman TUHAN, yaitu rancangan damai sejahtera dan bukan rancangan kecelakaan.'";
-  }
+  verse.innerHTML = win?"📖 <b>Roma 8:37</b> — 'Tetapi dalam semuanya itu kita lebih dari pada orang-orang yang menang, oleh Dia yang telah mengasihi kita.'":"📖 <b>Yeremia 29:11</b> — 'Sebab Aku ini mengetahui rancangan-rancangan apa yang ada pada-Ku mengenai kamu, demikianlah firman TUHAN, yaitu rancangan damai sejahtera dan bukan rancangan kecelakaan.'";
   show('endScreen');
 }
 
 /* Riwayat */
 function showHistoryScreen(){
   const list = document.getElementById('historyList');
-  if(playerHist.innerHTML==="" && botHist.innerHTML===""){
-    list.innerHTML = "<p>Belum ada permainan yang dimulai.</p>";
-  } else {
-    list.innerHTML = `
-      <h3>${playerName || "Pemain"} vs Bot</h3>
-      <h4>Tebakan Pemain:</h4>${playerHist.innerHTML || "(belum ada)"}
-      <h4>Tebakan Bot:</h4>${botHist.innerHTML || "(belum ada)"}
-    `;
-  }
+  if(playerHist.innerHTML==="" && botHist.innerHTML===""){ list.innerHTML = "<p>Belum ada permainan yang dimulai.</p>"; }
+  else { list.innerHTML = `<h3>${playerName || "Pemain"} vs Bot</h3><h4>Tebakan Pemain:</h4>${playerHist.innerHTML || "(belum ada)"}<h4>Tebakan Bot:</h4>${botHist.innerHTML || "(belum ada)"}`; }
   show('historyScreen');
 }
+
+/* ===== Auto-pindah fokus saat input tebakan ===== */
+const guessInputs = [g1, g2, g3, g4];
+guessInputs.forEach((input, idx) => {
+  input.addEventListener('input', () => {
+    if(input.value.length === 1 && idx < guessInputs.length - 1) {
+      guessInputs[idx + 1].focus();
+    }
+  });
+});
 </script>
 </body>
 </html>
