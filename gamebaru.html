@@ -111,7 +111,6 @@
   }
   #errorScreen h1 { color: #fff; }
 
-  /* Tambahan untuk foto di layar akhir */
   #endScreen img {
     width: 160px;
     height: 160px;
@@ -128,6 +127,20 @@
     font-weight: 600;
     margin-top: 8px;
   }
+
+  /* Riwayat */
+  #historyList {
+    text-align: left;
+    background: #fff0f5;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    color: #5a2c2c;
+  }
+  #historyList div {
+    border-bottom: 1px dashed #ffb6c1;
+    padding: 6px 0;
+  }
 </style>
 </head>
 <body>
@@ -141,6 +154,7 @@
   <input id="name" type="text" placeholder="Nama Pemain"><br>
   <input id="secret" type="text" maxlength="4" placeholder="1234"><br>
   <button onclick="startGame()">Mulai Game</button>
+  <button onclick="showHistoryScreen()">📜 Riwayat</button>
 
   <div class="rules">
     <h2>📜 Peraturan & Petunjuk:</h2>
@@ -152,6 +166,13 @@
       <li>Jika hasil <b>4</b>, maka pemain yang menebak <b>MENANG!</b> 🎉</li>
     </ul>
   </div>
+</div>
+
+<!-- Layar Riwayat -->
+<div id="historyScreen" class="screen">
+  <h1>📜 Riwayat Permainan</h1>
+  <div id="historyList"></div>
+  <button onclick="show('welcome')">⬅️ Kembali</button>
 </div>
 
 <!-- Layar tebakan pemain -->
@@ -296,7 +317,30 @@ function end(msg){
   document.getElementById('endMsg').textContent=msg;
   document.getElementById('endDetails').innerHTML=
     `<p>🔢 Angka kamu: <b>${playerSecret}</b><br>🤖 Angka bot: <b>${botSecret}</b></p>`;
+  saveHistory(msg.includes("menang")?"Menang":"Kalah");
   show('endScreen');
+}
+
+/* === Penyimpanan & Tampilan Riwayat === */
+function saveHistory(result){
+  const data=JSON.parse(localStorage.getItem("tebakHistory")||"[]");
+  const now=new Date().toLocaleString("id-ID",{dateStyle:"short",timeStyle:"short"});
+  data.push({tanggal:now,nama:playerName,hasil:result,pemain:playerSecret,bot:botSecret});
+  localStorage.setItem("tebakHistory",JSON.stringify(data));
+}
+function showHistoryScreen(){
+  const data=JSON.parse(localStorage.getItem("tebakHistory")||"[]");
+  const list=document.getElementById("historyList");
+  if(data.length===0){list.innerHTML="<p>Belum ada riwayat permainan.</p>";}
+  else{
+    list.innerHTML=data.map(x=>`
+      <div>
+        📅 <b>${x.tanggal}</b><br>
+        👤 ${x.nama} — <span>${x.hasil}</span><br>
+        🔢 Kamu: ${x.pemain} | 🤖 Bot: ${x.bot}
+      </div>`).reverse().join("");
+  }
+  show("historyScreen");
 }
 
 /* Navigasi input */
@@ -313,5 +357,4 @@ document.getElementById('secret').addEventListener('keydown',e=>{
 });
 </script>
 </body>
-    </html>
-
+</html>
