@@ -105,16 +105,33 @@
   }
 
   #errorScreen {
-    background: #8b0000; /* merah darah */
+    background: #8b0000;
     color: #fff;
     text-align: center;
   }
   #errorScreen h1 { color: #fff; }
+
+  /* Tambahan untuk foto di layar akhir */
+  #endScreen img {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    margin: 16px 0;
+    object-fit: cover;
+    border: 4px solid #ff7aa2;
+  }
+  #endDetails {
+    background: #fff0f5;
+    border-radius: 10px;
+    padding: 10px;
+    color: #5a2c2c;
+    font-weight: 600;
+    margin-top: 8px;
+  }
 </style>
 </head>
 <body>
 
-<!-- Nama pemain -->
 <div id="playerNameDisplay"></div>
 
 <!-- Layar sambutan -->
@@ -140,7 +157,7 @@
 <!-- Layar tebakan pemain -->
 <div id="playerTurn" class="screen">
   <h1>Tebak Angka Bot 🎯</h1>
-  <div id="guessArea" class="guess-grid">
+  <div class="guess-grid">
     <input id="g1" maxlength="1">
     <input id="g2" maxlength="1">
     <input id="g3" maxlength="1">
@@ -170,7 +187,9 @@
 
 <!-- Layar akhir -->
 <div id="endScreen" class="screen">
+  <img src="oryza.jpg" alt="Foto Pemain">
   <h1 id="endMsg"></h1>
+  <div id="endDetails"></div>
   <button onclick="location.reload()">Main Lagi 🔁</button>
 </div>
 
@@ -188,7 +207,6 @@ const all=[];
   for(const x of d)if(!c.includes(x)){c.push(x);back(c);c.pop();}}
   back([]);
 })();
-
 let playerSecret="",botSecret="",possible=[...all],botLast="",playerName="";
 const playerHist=document.getElementById('playerHistory');
 const botHist=document.getElementById('botHistory');
@@ -197,21 +215,14 @@ function isValid(s){return /^[1-9]{4}$/.test(s)&&new Set(s).size===4}
 function match(a,b){let c=0;for(let i=0;i<4;i++)if(a[i]===b[i])c++;return c}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
 document.getElementById(id).classList.add('active');}
-
-function error(msg){
-  document.getElementById('errorMsg').textContent=msg;
-  show('errorScreen');
-}
-function closeError(){
-  if(playerSecret) show('playerTurn');
-  else show('welcome');
-}
+function error(msg){document.getElementById('errorMsg').textContent=msg;show('errorScreen');}
+function closeError(){if(playerSecret)show('playerTurn');else show('welcome');}
 
 function startGame(){
   const n=document.getElementById('name').value.trim();
   const sec=document.getElementById('secret').value.trim();
-  if(!n) return error("Nama tidak boleh kosong!");
-  if(!isValid(sec)) return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
+  if(!n)return error("Nama tidak boleh kosong!");
+  if(!isValid(sec))return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
   playerName=n;
   document.getElementById('playerNameDisplay').textContent="👤 "+playerName;
   playerSecret=sec;
@@ -230,7 +241,7 @@ function submitGuess(){
   const m=match(g,botSecret);
   document.getElementById('result').textContent=`Hasil bot: ${m}`;
   playerHist.innerHTML+=`<div><span>${g}</span> → ${m}</div>`;
-  document.getElementById('guessBtn').style.display='none'; // cegah curang
+  document.getElementById('guessBtn').style.display='none';
   if(m===4){end("Kamu menang! 🎉");return;}
   document.getElementById('doneBtn').style.display='inline-block';
 }
@@ -260,10 +271,7 @@ function showBotTurn(){
 function feedback(f){
   if(f<0||f>4)return error("Feedback tidak valid!");
   const realMatch=match(botLast,playerSecret);
-  if(f!==realMatch){
-    end("Bot menang karena kamu memberi feedback salah! 🤨");
-    return;
-  }
+  if(f!==realMatch){end("Bot menang karena kamu memberi feedback salah! 🤨");return;}
   const filtered=possible.filter(x=>match(x,botLast)===f);
   if(filtered.length===0)return error("Feedbackmu tidak konsisten!");
   botHist.innerHTML+=`<div><span>${botLast}</span> → ${f}</div>`;
@@ -286,23 +294,23 @@ function clearGuess(){
 
 function end(msg){
   document.getElementById('endMsg').textContent=msg;
+  document.getElementById('endDetails').innerHTML=
+    `<p>🔢 Angka kamu: <b>${playerSecret}</b><br>🤖 Angka bot: <b>${botSecret}</b></p>`;
   show('endScreen');
 }
 
-/* Navigasi antar kotak input otomatis */
+/* Navigasi input */
 const inputs=[g1,g2,g3,g4];
 inputs.forEach((input,idx)=>{
-  input.addEventListener('input',()=>{if(input.value.length===1 && idx<3) inputs[idx+1].focus();});
+  input.addEventListener('input',()=>{if(input.value.length===1 && idx<3)inputs[idx+1].focus();});
   input.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){e.preventDefault();if(idx<3) inputs[idx+1].focus();else submitGuess();}
-    if(e.key==='Backspace' && !input.value && idx>0){inputs[idx-1].focus();}
+    if(e.key==='Enter'){e.preventDefault();if(idx<3)inputs[idx+1].focus();else submitGuess();}
+    if(e.key==='Backspace'&&!input.value&&idx>0)inputs[idx-1].focus();
   });
 });
-
-/* Tekan enter di halaman awal langsung mulai game */
 document.getElementById('secret').addEventListener('keydown',e=>{
   if(e.key==='Enter'){e.preventDefault();startGame();}
 });
 </script>
 </body>
-</html>
+    </html>
