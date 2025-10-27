@@ -28,7 +28,7 @@
     margin: 8px; border: 2px solid #ffcce0; border-radius: 10px;
   }
   button {
-    margin-top: 14px; background: #ff7aa2; color: white; border: none;
+    background: #ff7aa2; color: white; border: none;
     border-radius: 8px; padding: 10px 18px; font-weight: 600; cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     transition: 0.2s;
@@ -92,11 +92,6 @@
     color: #b30057;
     text-align: center;
   }
-  .guess-grid input:focus {
-    outline: none;
-    border-color: #ff5d8a;
-    background: #fff0f5;
-  }
 
   #playerNameDisplay {
     position: absolute;
@@ -104,22 +99,58 @@
     color: #b30057; font-weight: 700; font-size: 14px;
   }
 
-  #errorScreen {
-    background: #8b0000;
-    color: #fff;
-    text-align: center;
+  .surrender-btn {
+    position: absolute;
+    top: 10px; right: 14px;
+    background: #ff5d8a; color: white;
+    border-radius: 8px; padding: 6px 10px;
+    font-size: 12px; cursor: pointer;
   }
-  #errorScreen h1 { color: #fff; }
 
-  #endScreen img {
-    width: 160px;
-    height: 160px;
+  /* Lightbox popup tengah */
+  #lightbox {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(255, 240, 245, 0.3);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+    z-index: 999;
+  }
+  #lightbox img {
+    width: 320px; max-width: 90%;
+    border-radius: 16px;
+    border: 4px solid #ff7aa2;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    animation: pop .3s ease;
+  }
+  @keyframes pop {from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);} }
+
+  .verse {
+    margin-top: 12px;
+    background: #fff0f5;
+    border-radius: 10px;
+    padding: 10px;
+    color: #5a2c2c;
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  #endScreen img, #cheatScreen img, #surrenderScreen img {
+    width: 160px; height: 160px;
     border-radius: 50%;
     margin: 16px 0;
     object-fit: cover;
     border: 4px solid #ff7aa2;
+    cursor: pointer;
+    transition: 0.3s;
   }
-  #endDetails {
+  #endScreen img:hover, #cheatScreen img:hover, #surrenderScreen img:hover {
+    transform: scale(1.05);
+  }
+
+  #endDetails, #cheatDetails, #surrenderDetails {
     background: #fff0f5;
     border-radius: 10px;
     padding: 10px;
@@ -128,18 +159,12 @@
     margin-top: 8px;
   }
 
-  /* Riwayat */
-  #historyList {
-    text-align: left;
-    background: #fff0f5;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 14px;
-    color: #5a2c2c;
+  #errorScreen {
+    background: #8b0000; color: #fff; text-align: center;
   }
-  #historyList div {
-    border-bottom: 1px dashed #ffb6c1;
-    padding: 6px 0;
+
+  .btn-row {
+    display: flex; justify-content: center; gap: 10px; margin-top: 14px;
   }
 </style>
 </head>
@@ -152,31 +177,37 @@
   <h1>🎮 Selamat Datang di Game Tebak 4 Angka 🎀</h1>
   <p>Masukkan namamu dan angka rahasiamu dulu ya!</p>
   <input id="name" type="text" placeholder="Nama Pemain"><br>
-  <input id="secret" type="text" maxlength="4" placeholder="1234"><br>
-  <button onclick="startGame()">Mulai Game</button>
-  <button onclick="showHistoryScreen()">📜 Riwayat</button>
+  <input id="secret" type="text" maxlength="4" placeholder="Angka Kamu"><br>
+  <div class="btn-row">
+    <button onclick="showHistoryScreen()">📜 Riwayat</button>
+    <button onclick="startGame()">Mulai Game ▶️</button>
+  </div>
 
   <div class="rules">
     <h2>📜 Peraturan & Petunjuk:</h2>
     <ul>
       <li>Gunakan angka <b>1–9</b> (tidak boleh 0 dan tidak boleh ganda).</li>
-      <li>Masukkan <b>4 angka rahasia</b> untuk disembunyikan dari bot.</li>
       <li>Pemain dan bot bergantian menebak angka satu sama lain.</li>
-      <li>Setiap tebakan akan diberi hasil jumlah angka & posisi yang benar.</li>
       <li>Jika hasil <b>4</b>, maka pemain yang menebak <b>MENANG!</b> 🎉</li>
     </ul>
   </div>
 </div>
 
-<!-- Layar Riwayat -->
+<!-- Lightbox -->
+<div id="lightbox" onclick="this.style.display='none'">
+  <img id="lightboxImg" src="">
+</div>
+
+<!-- Layar riwayat -->
 <div id="historyScreen" class="screen">
   <h1>📜 Riwayat Permainan</h1>
   <div id="historyList"></div>
   <button onclick="show('welcome')">⬅️ Kembali</button>
 </div>
 
-<!-- Layar tebakan pemain -->
+<!-- Layar pemain -->
 <div id="playerTurn" class="screen">
+  <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
   <h1>Tebak Angka Bot 🎯</h1>
   <div class="guess-grid">
     <input id="g1" maxlength="1">
@@ -192,13 +223,14 @@
   <div class="history" id="playerHistory"></div>
 </div>
 
-<!-- Layar giliran bot -->
+<!-- Layar bot -->
 <div id="botTurn" class="screen" style="background:linear-gradient(135deg,#ffe6f0,#d2b48c);">
+  <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
   <h1>Giliran Bot 🔮</h1>
   <p>Angka rahasiamu:</p>
   <div id="playerSecretTable" class="table-secret"></div>
   <div class="bot-box" id="botGuess">----</div>
-  <p>Beri tahu bot berapa angka yang benar (posisi & angka):</p>
+  <p>Beri tahu bot berapa angka yang benar:</p>
   <div id="feedbackArea"></div>
   <button id="nextTurnBtn" style="display:none;" onclick="nextTurn()">Sudah ✅</button>
 
@@ -206,23 +238,56 @@
   <div class="history" id="botHistory"></div>
 </div>
 
+<!-- Layar cheat -->
+<div id="cheatScreen" class="screen">
+  <img src="IMG-20251006-WA0031.jpg" alt="Jangan Curang" onclick="openLightbox(this)">
+  <h1>🚫 Jangan Curang!</h1>
+  <div id="cheatDetails">
+    <p>Kamu memberi feedback yang salah... 😔<br>
+    Ingatlah untuk bermain jujur ya!</p>
+    <blockquote><b>Amsal 12:22</b> — "Bibir dusta adalah kekejian bagi TUHAN, tetapi orang yang berlaku setia dikenan-Nya."</blockquote>
+  </div>
+  <div class="verse">💡 “Hendaklah integritasmu nyata di setiap hal kecil.”</div>
+  <button onclick="forgiveCheat()">🙏 Saya Bertobat</button>
+</div>
+
+<!-- Layar menyerah -->
+<div id="surrenderScreen" class="screen">
+  <img src="IMG-20251016-WA0019.jpg" alt="Menyerah" onclick="openLightbox(this)">
+  <h1>😢 Yakin nih mau nyerah?</h1>
+  <div id="surrenderDetails">
+    <p>Kalau menyerah, kamu langsung dinyatakan kalah loh!</p>
+  </div>
+  <div class="verse">📖 <b>Filipi 4:13</b> — “Segala perkara dapat kutanggung di dalam Dia yang memberi kekuatan kepadaku.”</div>
+  <div class="btn-row">
+    <button onclick="cancelSurrender()">Tidak 😤</button>
+    <button onclick="giveUp()">Iya 😔</button>
+  </div>
+</div>
+
 <!-- Layar akhir -->
 <div id="endScreen" class="screen">
-  <img src="IMG-20251006-WA0031.jpg" alt="Foto Pemain">
+  <img id="endImg" src="" alt="Foto Akhir" onclick="openLightbox(this)">
   <h1 id="endMsg"></h1>
   <div id="endDetails"></div>
+  <div id="endVerse" class="verse"></div>
   <button onclick="location.reload()">Main Lagi 🔁</button>
 </div>
 
-<!-- Layar kesalahan -->
+<!-- Layar error -->
 <div id="errorScreen" class="screen">
   <h1 id="errorMsg"></h1>
   <button onclick="closeError()">Baiklah 😅</button>
 </div>
 
 <script>
-const all=[];
-(function gen(){
+/* popup tengah */
+function openLightbox(img){
+  document.getElementById('lightboxImg').src=img.src;
+  document.getElementById('lightbox').style.display='flex';
+}
+
+const all=[]; (function gen(){
   const d=['1','2','3','4','5','6','7','8','9'];
   function back(c){if(c.length===4){all.push(c.join(''));return}
   for(const x of d)if(!c.includes(x)){c.push(x);back(c);c.pop();}}
@@ -244,16 +309,13 @@ function startGame(){
   const sec=document.getElementById('secret').value.trim();
   if(!n)return error("Nama tidak boleh kosong!");
   if(!isValid(sec))return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
-  playerName=n;
-  document.getElementById('playerNameDisplay').textContent="👤 "+playerName;
-  playerSecret=sec;
+  playerName=n; playerSecret=sec;
   botSecret=all[Math.floor(Math.random()*all.length)];
   possible=[...all];
+  document.getElementById('playerNameDisplay').textContent="👤 "+playerName;
   const tbl=document.getElementById('playerSecretTable');
-  tbl.innerHTML="";
-  for(let ch of playerSecret){const cell=document.createElement('div');cell.textContent=ch;tbl.appendChild(cell);}
-  show('playerTurn');
-  g1.focus();
+  tbl.innerHTML=""; for(let ch of playerSecret){const cell=document.createElement('div');cell.textContent=ch;tbl.appendChild(cell);}
+  show('playerTurn'); g1.focus();
 }
 
 function submitGuess(){
@@ -263,98 +325,81 @@ function submitGuess(){
   document.getElementById('result').textContent=`Hasil bot: ${m}`;
   playerHist.innerHTML+=`<div><span>${g}</span> → ${m}</div>`;
   document.getElementById('guessBtn').style.display='none';
-  if(m===4){end("Kamu menang! 🎉");return;}
+  if(m===4){end("Kamu menang! 🎉", true);return;}
   document.getElementById('doneBtn').style.display='inline-block';
 }
 
 function afterBotFeedback(){
   document.getElementById('doneBtn').style.display='none';
-  clearGuess();
-  showBotTurn();
+  clearGuess(); showBotTurn();
 }
 
 function showBotTurn(){
   botLast=possible[Math.floor(Math.random()*possible.length)];
   document.getElementById('botGuess').textContent=botLast;
   const fb=document.getElementById('feedbackArea');
-  fb.innerHTML='';
-  document.getElementById('nextTurnBtn').style.display='none';
+  fb.innerHTML=''; document.getElementById('nextTurnBtn').style.display='none';
   for(let i=0;i<=4;i++){
     const b=document.createElement('div');
-    b.className='num-btn';
-    b.textContent=i;
-    b.onclick=()=>feedback(i);
+    b.className='num-btn'; b.textContent=i; b.onclick=()=>feedback(i);
     fb.appendChild(b);
   }
   show('botTurn');
 }
 
 function feedback(f){
-  if(f<0||f>4)return error("Feedback tidak valid!");
   const realMatch=match(botLast,playerSecret);
-  if(f!==realMatch){end("Bot menang karena kamu memberi feedback salah! 🤨");return;}
+  if(f!==realMatch){show('cheatScreen');return;}
   const filtered=possible.filter(x=>match(x,botLast)===f);
-  if(filtered.length===0)return error("Feedbackmu tidak konsisten!");
   botHist.innerHTML+=`<div><span>${botLast}</span> → ${f}</div>`;
-  if(f===4)return end("Bot menang! 🤖");
-  possible=filtered;
-  document.getElementById('nextTurnBtn').style.display='inline-block';
+  if(f===4)return end("Bot menang! 🤖", false);
+  possible=filtered; document.getElementById('nextTurnBtn').style.display='inline-block';
 }
 
+function forgiveCheat(){ show('botTurn'); }
+
+function confirmSurrender(){ show('surrenderScreen'); }
+function cancelSurrender(){ show(playerSecret && botLast ? 'botTurn':'playerTurn'); }
+function giveUp(){ end("Kamu menyerah 😔", false); }
+
 function nextTurn(){
-  show('playerTurn');
-  document.getElementById('guessBtn').style.display='inline-block';
-  clearGuess();
-  g1.focus();
+  show('playerTurn'); document.getElementById('guessBtn').style.display='inline-block';
+  clearGuess(); g1.focus();
 }
 
 function clearGuess(){
-  g1.value=g2.value=g3.value=g4.value='';
-  document.getElementById('result').textContent='';
+  g1.value=g2.value=g3.value=g4.value=''; document.getElementById('result').textContent='';
 }
 
-function end(msg){
+function end(msg,win){
+  const img=document.getElementById('endImg');
+  img.src=win?"IMG-20251016-WA0037.jpg":"motion_photo_7499955795629952970.jpg";
   document.getElementById('endMsg').textContent=msg;
   document.getElementById('endDetails').innerHTML=
     `<p>🔢 Angka kamu: <b>${playerSecret}</b><br>🤖 Angka bot: <b>${botSecret}</b></p>`;
-  saveHistory(msg.includes("menang")?"Menang":"Kalah");
+  const verse=document.getElementById('endVerse');
+  if(win){
+    verse.innerHTML = "📖 <b>Roma 8:37</b> — 'Tetapi dalam semuanya itu kita lebih dari pada orang-orang yang menang, oleh Dia yang telah mengasihi kita.'";
+  } else {
+    verse.innerHTML = "📖 <b>Yeremia 29:11</b> — 'Sebab Aku ini mengetahui rancangan-rancangan apa yang ada pada-Ku mengenai kamu, demikianlah firman TUHAN, yaitu rancangan damai sejahtera dan bukan rancangan kecelakaan.'";
+  }
   show('endScreen');
 }
 
-/* === Penyimpanan & Tampilan Riwayat === */
-function saveHistory(result){
-  const data=JSON.parse(localStorage.getItem("tebakHistory")||"[]");
-  const now=new Date().toLocaleString("id-ID",{dateStyle:"short",timeStyle:"short"});
-  data.push({tanggal:now,nama:playerName,hasil:result,pemain:playerSecret,bot:botSecret});
-  localStorage.setItem("tebakHistory",JSON.stringify(data));
-}
+/* Riwayat */
 function showHistoryScreen(){
-  const data=JSON.parse(localStorage.getItem("tebakHistory")||"[]");
-  const list=document.getElementById("historyList");
-  if(data.length===0){list.innerHTML="<p>Belum ada riwayat permainan.</p>";}
-  else{
-    list.innerHTML=data.map(x=>`
-      <div>
-        📅 <b>${x.tanggal}</b><br>
-        👤 ${x.nama} — <span>${x.hasil}</span><br>
-        🔢 Kamu: ${x.pemain} | 🤖 Bot: ${x.bot}
-      </div>`).reverse().join("");
+  const list = document.getElementById('historyList');
+  if(playerHist.innerHTML==="" && botHist.innerHTML===""){
+    list.innerHTML = "<p>Belum ada permainan yang dimulai.</p>";
+  } else {
+    list.innerHTML = `
+      <h3>${playerName || "Pemain"} vs Bot</h3>
+      <h4>Tebakan Pemain:</h4>${playerHist.innerHTML || "(belum ada)"}
+      <h4>Tebakan Bot:</h4>${botHist.innerHTML || "(belum ada)"}
+    `;
   }
-  show("historyScreen");
+  show('historyScreen');
 }
-
-/* Navigasi input */
-const inputs=[g1,g2,g3,g4];
-inputs.forEach((input,idx)=>{
-  input.addEventListener('input',()=>{if(input.value.length===1 && idx<3)inputs[idx+1].focus();});
-  input.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){e.preventDefault();if(idx<3)inputs[idx+1].focus();else submitGuess();}
-    if(e.key==='Backspace'&&!input.value&&idx>0)inputs[idx-1].focus();
-  });
-});
-document.getElementById('secret').addEventListener('keydown',e=>{
-  if(e.key==='Enter'){e.preventDefault();startGame();}
-});
 </script>
 </body>
 </html>
