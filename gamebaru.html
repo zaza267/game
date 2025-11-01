@@ -2,78 +2,49 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Tebak 4 Angka — vs Bot & Mabar</title>
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <style>
-:root{
-  --bg1:#ffe6f0; --bg2:#ffd7e5; --accent:#b30057; --card:#fff; --muted:#5a2c2c;
-}
-*{box-sizing:border-box;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-body {
-  margin:0; min-height:100vh;
-  display:flex; align-items:center; justify-content:center;
-  background: linear-gradient(135deg,var(--bg1),var(--bg2));
-}
-.app {
-  width:380px; max-width:94%;
-  background:var(--card); border-radius:14px; padding:18px; position:relative;
-  box-shadow:0 10px 30px rgba(0,0,0,0.12);
-}
-.header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
-.title { color:var(--accent); font-weight:700; font-size:18px; }
-.small { font-size:13px; color:var(--muted); }
-#statusMsg { font-size:13px; color:#7a2b4a; text-align:center; margin-bottom:8px; min-height:18px; }
-
-/* screens */
-.screen { display:none; }
-.screen.active { display:block; }
-
-/* inputs & buttons */
-input[type=text], input[type=tel] {
-  width:100%; padding:10px 12px; border-radius:10px; border:2px solid #ffd6e8; text-align:center;
-  font-size:16px; margin-top:8px;
-}
-.button-row { display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
-button { background:#ff7aa2; color:#fff; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600; }
-button.ghost { background:transparent; color:var(--accent); border:1px solid #ffd6e8; }
-button.small { padding:6px 10px; font-size:14px; border-radius:8px; }
-
-/* secret table + guess grid */
-.table-secret { display:flex; justify-content:center; gap:8px; margin:8px 0 14px; }
-.table-secret div { background:#d2b48c;color:#fff;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:700; }
-.guess-grid { display:flex; gap:8px; justify-content:center; margin-top:12px; }
-.guess-grid input { width:56px;height:56px;border-radius:10px;font-size:20px;text-align:center;border:2px solid #ffb6c1; }
-
-/* bot box */
-.bot-box { background: linear-gradient(135deg,#ffccd5,#d2b48c); color:#5a2c2c; border-radius:10px; padding:12px; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; margin:12px auto; width:180px; }
-
-/* history */
-.history { background:#fff6f9;border-radius:10px;padding:10px;margin-top:10px; max-height:160px; overflow:auto; font-size:14px; color:var(--muted); }
-
-/* feedback buttons */
-.feedback-row { display:flex; gap:8px; justify-content:center; margin-top:10px; }
-.feedback-row button { width:44px; height:44px; border-radius:8px; font-weight:800; font-size:16px; }
-
-/* modals */
-.modal-overlay { position:fixed; left:0;top:0;right:0;bottom:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:999; }
-.modal { background:#fff; padding:14px; border-radius:12px; width:320px; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
-
-/* surrender screen */
-.surrender-img { width:120px; height:120px; border-radius:50%; object-fit:cover; display:block; margin:10px auto; border:4px solid #ff7aa2; }
-
-/* top controls (dark mode/music) */
-.top-controls { position:absolute; left:12px; top:12px; display:flex; gap:8px; }
-.switch { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); }
-.switch input { margin-right:6px; }
-
-/* small responsive */
-@media (max-width:420px){ .app{padding:12px;} .guess-grid input{width:48px;height:48px;} .table-secret div{width:36px;height:36px;} }
+  :root{
+    --bg1:#ffe6f0; --bg2:#ffd7e5; --accent:#b30057; --card:#fff; --muted:#5a2c2c;
+    --pink-alert-bg:#ffd6e8; --pink-alert-border:#ff7aa2;
+  }
+  *{box-sizing:border-box;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--bg1),var(--bg2));}
+  .app{width:380px;max-width:94%;background:var(--card);border-radius:14px;padding:18px;position:relative;box-shadow:0 10px 30px rgba(0,0,0,.12);}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .title{color:var(--accent);font-weight:700;font-size:18px}
+  .small{font-size:13px;color:var(--muted)}
+  #announce{display:none;background:var(--pink-alert-bg);border:2px solid var(--pink-alert-border);color:var(--accent);padding:10px;border-radius:10px;margin-bottom:10px;text-align:center;font-weight:600}
+  .screen{display:none}
+  .screen.active{display:block}
+  input[type=text],input[type=tel]{width:100%;padding:10px 12px;border-radius:10px;border:2px solid #ffd6e8;text-align:center;font-size:16px;margin-top:8px;background:#fff}
+  .button-row{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  button{background:#ff7aa2;color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  button.ghost{background:transparent;color:var(--accent);border:1px solid #ffd6e8}
+  button.small{padding:6px 10px;font-size:14px;border-radius:8px}
+  .table-secret{display:flex;justify-content:center;gap:8px;margin:8px 0 14px}
+  .table-secret div{background:#d2b48c;color:#fff;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:700}
+  .guess-grid{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  .guess-grid input{width:56px;height:56px;border-radius:10px;font-size:20px;text-align:center;border:2px solid #ffb6c1;background:#fff}
+  .bot-box{background:linear-gradient(135deg,#ffccd5,#d2b48c);color:#5a2c2c;border-radius:10px;padding:12px;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:12px auto;width:180px}
+  .history{background:#fff6f9;border-radius:10px;padding:10px;margin-top:10px;max-height:160px;overflow:auto;font-size:14px;color:var(--muted)}
+  .feedback-row{display:flex;gap:8px;justify-content:center;margin-top:10px}
+  .feedback-row button{width:48px;height:48px;border-radius:8px;font-weight:800;font-size:16px}
+  .modal-overlay{position:fixed;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);z-index:999}
+  .modal{background:#fff;padding:14px;border-radius:12px;width:320px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+  .surrender-img{width:120px;height:120px;border-radius:50%;object-fit:cover;display:block;margin:10px auto;border:4px solid #ff7aa2}
+  .top-controls{position:absolute;left:12px;top:12px;display:flex;gap:8px}
+  .switch{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+  .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;z-index:1000}
+  .lightbox img{max-width:92%;max-height:92%;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  /* responsive */
+  @media (max-width:420px){.app{padding:12px}.guess-grid input{width:48px;height:48px}.table-secret div{width:36px;height:36px}.bot-box{width:160px}}
 </style>
 </head>
 <body>
 <div class="app" role="application">
-
   <div class="top-controls">
     <label class="switch"><input id="darkToggle" type="checkbox">Dark</label>
     <label class="switch"><input id="musicToggle" type="checkbox">Music</label>
@@ -82,18 +53,19 @@ button.small { padding:6px 10px; font-size:14px; border-radius:8px; }
   <div class="header">
     <div>
       <div class="title">🎮 Tebak 4 Angka — vs Bot & Mabar</div>
-      <div class="small">Main sendirian atau undang teman</div>
+      <div class="small">Main sendiri atau ajak teman</div>
     </div>
     <div id="playerNameDisplay" class="small"></div>
   </div>
 
-  <div id="statusMsg"></div>
+  <!-- announcement / error block (pink) -->
+  <div id="announce"></div>
 
   <!-- WELCOME -->
   <div id="welcome" class="screen active">
     <div>
       <div class="small">Nama</div>
-      <input id="name" type="text" placeholder="Nama Pemain">
+      <input id="name" type="text" placeholder="Nama Pemain (mis. Budi)">
       <div class="small">Angka rahasiamu (4 digit unik 1-9)</div>
       <input id="secret" type="text" maxlength="4" placeholder="e.g. 1234">
       <div class="button-row">
@@ -110,8 +82,7 @@ button.small { padding:6px 10px; font-size:14px; border-radius:8px; }
     <div style="background:#fff6f9;padding:12px;border-radius:10px;">
       <div style="font-weight:700">Kode Room kamu</div>
       <div style="margin:8px 0;">
-        <!-- BIG CODE DISPLAY -->
-        <input id="roomCode" type="text" readonly style="font-size:20px;font-weight:700;text-align:center; letter-spacing:4px; background:#fff;border:2px solid #ffd6e8;padding:10px;border-radius:10px;">
+        <input id="roomCode" type="text" readonly style="font-size:20px;font-weight:700;text-align:center;letter-spacing:6px;background:#fff;border:2px solid #ffd6e8;padding:10px;border-radius:10px;">
       </div>
       <div style="display:flex;gap:8px;justify-content:center;">
         <button id="btnGen" class="small">🔑 Generate</button>
@@ -121,7 +92,7 @@ button.small { padding:6px 10px; font-size:14px; border-radius:8px; }
 
     <div style="background:#fff6f9;padding:12px;border-radius:10px;margin-top:12px;">
       <div style="font-weight:700">Join Room</div>
-      <input id="joinCode" type="text" maxlength="6" placeholder="Masukkan kode room" style="font-size:16px;padding:10px;border-radius:10px;border:2px solid #ffd6e8;margin-top:8px;">
+      <input id="joinCode" type="text" maxlength="6" placeholder="Masukkan kode room" style="font-size:16px;padding:10px;border-radius:10px;border:2px solid #ffd6e8;margin-top:8px;letter-spacing:6px;">
       <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
         <button id="btnJoinStart" class="small">Start (Join)</button>
       </div>
@@ -148,6 +119,7 @@ button.small { padding:6px 10px; font-size:14px; border-radius:8px; }
 
     <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
       <button id="guessBtn">Kirim Tebakan</button>
+      <button id="doneBtn" style="display:none;" class="ghost small">Sudah ✅</button>
       <button id="clearBtn" class="ghost small">Bersihkan</button>
     </div>
 
@@ -197,43 +169,214 @@ button.small { padding:6px 10px; font-size:14px; border-radius:8px; }
       <button id="btnPlayAgain">Main Lagi</button>
     </div>
   </div>
+</div>
 
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" onclick="this.style.display='none'">
+  <img id="lightboxImg" src="">
 </div>
 
 <!-- AUDIO -->
 <audio id="bgMusic" loop src="Kasih Putih (Acoustic).mp3"></audio>
 
-<!-- SURRENDER / CHEAT MODALS (created dynamically) -->
-
 <script>
-/* -------------------------
-   Utility + UI helpers
-   ------------------------- */
+/* =========================
+   Helper & UI utilities
+   ========================= */
 const $ = id => document.getElementById(id);
+function announce(text, time=3500){
+  const el = $('announce');
+  el.textContent = text;
+  el.style.display = 'block';
+  clearTimeout(window._announceTimer);
+  if(time>0) window._announceTimer = setTimeout(()=> el.style.display='none', time);
+}
 function show(screenId){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el = $(screenId); if(el) el.classList.add('active');
-  // clear status on screen change
-  setStatus('');
-}
-function setStatus(msg, timeout=2500){
-  $('statusMsg').textContent = msg || '';
-  if(timeout && msg) {
-    clearTimeout(window._statusTimeout);
-    window._statusTimeout = setTimeout(()=>{ if($('statusMsg')) $('statusMsg').textContent=''; }, timeout);
-  }
+  // clear result area each switch except when end
+  if(screenId!=='endScreen') $('result').textContent='';
 }
 
-/* simple modal creation for confirm */
-function showConfirm(title, message, yesCb, noCb){
+/* Autofocus inputs */
+const guessInputs = ['g1','g2','g3','g4'].map(id=>$(id));
+guessInputs.forEach((inp,idx)=> inp.addEventListener('input', ()=> {
+  if(inp.value.length===1 && idx < guessInputs.length-1) guessInputs[idx+1].focus();
+}));
+
+/* Theme & music switches */
+$('darkToggle').addEventListener('change', e=>{
+  if(e.target.checked){
+    document.documentElement.style.background = 'linear-gradient(135deg,#2b002b,#4a004a)';
+    document.querySelector('.app').style.background = '#3a003a';
+    document.querySelectorAll('.screen').forEach(s=> s.style.background = '#3a003a');
+  } else {
+    document.documentElement.style.background = '';
+    document.querySelector('.app').style.background = '';
+    document.querySelectorAll('.screen').forEach(s=> s.style.background = '');
+  }
+});
+$('musicToggle').addEventListener('change', e=>{
+  const audio = $('bgMusic');
+  if(e.target.checked) audio.play().catch(()=>{}); else audio.pause();
+});
+
+/* show image in lightbox */
+function openLightbox(src){
+  $('lightboxImg').src = src;
+  $('lightbox').style.display = 'flex';
+}
+
+/* =========================
+   Vs Bot logic (local)
+   ========================= */
+const allComb = (()=>{
+  const out=[]; const d='123456789'.split('');
+  function back(cur){ if(cur.length===4){ out.push(cur.join('')); return; } for(const x of d) if(!cur.includes(x)){ cur.push(x); back(cur); cur.pop(); } }
+  back([]); return out;
+})();
+let localBotSecret = '';
+let pendingBotGuess = null; // when bot waiting for feedback
+
+function startVsBot(){
+  const n = $('name').value.trim();
+  const sec = $('secret').value.trim();
+  if(!n){ announce('Nama tidak boleh kosong'); return; }
+  if(!/^[1-9]{4}$/.test(sec) || new Set(sec).size!==4){ announce('Secret harus 4 angka unik (1-9)'); return; }
+  sessionStorage.setItem('localPlayerName', n);
+  sessionStorage.setItem('localPlayerSecret', sec);
+  localBotSecret = allComb[Math.floor(Math.random()*allComb.length)];
+  $('playerNameDisplay').textContent = '👤 ' + n;
+  $('playerHistory').innerHTML = '';
+  $('opponentHistory').innerHTML = '';
+  pendingBotGuess = null;
+  // show playerTurn
+  show('playerTurn');
+  guessInputs[0].focus();
+}
+
+/* user submits guess (local or online) */
+$('guessBtn').addEventListener('click', ()=> {
+  const g = guessInputs.map(i=>i.value).join('');
+  const onlineRoom = sessionStorage.getItem('onlineRoom');
+  if(onlineRoom){
+    // online path handled by module
+    if(window.submitGuessOnline){
+      window.submitGuessOnline(g).catch(e=> announce('Gagal kirim tebakan: '+(e.message||e)));
+      guessInputs.forEach(i=>i.value=''); guessInputs[0].focus();
+    } else announce('Fitur online belum siap');
+    return;
+  }
+  // local path
+  if(!/^[1-9]{4}$/.test(g) || new Set(g).size!==4){ announce('Tebakan harus 4 angka unik (1-9)'); return; }
+  const res = (a,b)=>{let c=0;for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c;};
+  const r = res(g, localBotSecret);
+  $('result').textContent = `Hasil bot: ${r}`;
+  $('playerHistory').innerHTML += `<div><strong>${g}</strong> → ${r}</div>`;
+  // show Done button so user can move to bot guess
+  $('doneBtn').style.display = 'inline-block';
+  // if player wins immediately
+  if(r===4){ showEnd('Kamu menang! 🎉', true); return; }
+});
+
+/* Done button: move to bot guess (local) */
+$('doneBtn').addEventListener('click', ()=> {
+  $('doneBtn').style.display = 'none';
+  // generate bot guess and ask player to give honest feedback
+  const guess = allComb[Math.floor(Math.random()*allComb.length)];
+  pendingBotGuess = guess;
+  $('opponentGuess').textContent = guess;
+  show('opponentTurn');
+  announce('Berikan feedback untuk tebakan lawan (0-4)');
+});
+
+/* feedback buttons (works for both local pending and online pending) */
+document.querySelectorAll('.feedback-row button').forEach(btn=>{
+  btn.addEventListener('click', async ()=> {
+    const v = Number(btn.getAttribute('data-v'));
+    // LOCAL pending
+    if(pendingBotGuess){
+      const real = (a,b)=>{let c=0;for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c;};
+      const mySecret = sessionStorage.getItem('localPlayerSecret') || '';
+      const realVal = real(pendingBotGuess, mySecret);
+      if(v !== realVal){
+        // lying -> show cheat modal (with img IMG-20251016-WA0019.jpg)
+        showCheatLocal();
+        return;
+      }
+      // honest -> add to opponentHistory and continue
+      $('opponentHistory').innerHTML += `<div><strong>${pendingBotGuess}</strong> → ${v}</div>`;
+      if(v===4){ showEnd('Bot menang 🤖', false); pendingBotGuess = null; return; }
+      pendingBotGuess = null;
+      announce('Terima kasih, jujur! Giliranmu.');
+      show('playerTurn');
+      guessInputs[0].focus();
+      return;
+    }
+
+    // ONLINE pending -> call handler defined in module
+    if(window.handleLocalFeedbackForPending){
+      try{
+        await window.handleLocalFeedbackForPending(v);
+      } catch(e){
+        announce('Gagal mengirim feedback: '+(e.message||e));
+      }
+    } else {
+      announce('Tidak ada tebakan untuk di-feedback.');
+    }
+  });
+});
+
+/* clear inputs */
+$('clearBtn').addEventListener('click', ()=>{ guessInputs.forEach(i=>i.value=''); guessInputs[0].focus(); $('result').textContent=''; });
+
+/* surrender flow (confirm -> show surrender screen with image IMG-20251006-WA0031.jpg) */
+function handleSurrender(){
+  showConfirm('Menyerah?', 'Yakin ingin menyerah? Kamu akan dinyatakan kalah.', ()=>{
+    // show surrender modal with photo and verse
+    const html = `<div style="text-align:center;">
+      <img class="surrender-img" src="IMG-20251006-WA0031.jpg" alt="Menyerah" onclick="openLightbox('IMG-20251006-WA0031.jpg')">
+      <h3>😢 Kamu menyerah</h3>
+      <div style="margin-top:8px;font-weight:600;">Filipi 4:13 — "Segala perkara dapat kutanggung..."</div>
+    </div>`;
+    showInfoModal(html,'Oke',()=>{
+      // update online room if any
+      const room = sessionStorage.getItem('onlineRoom');
+      if(room && window.cleanupRoomOnSurrender){
+        // if host/guest connected, tell remote via DB that other won
+        window.cleanupRoomOnSurrender().catch(()=>{});
+      }
+      // reload as requested
+      location.reload();
+    });
+  }, ()=>{ announce('Lanjut bermain'); });
+}
+$('btnSurrender').addEventListener('click', handleSurrender);
+$('btnSurrender2').addEventListener('click', handleSurrender);
+
+/* cheat modal (local lying) - image IMG-20251016-WA0019.jpg */
+function showCheatLocal(){
+  const html = `<div style="text-align:center;">
+    <img class="surrender-img" src="IMG-20251016-WA0019.jpg" alt="Jangan Curang" onclick="openLightbox('IMG-20251016-WA0019.jpg')">
+    <h3>🚫 Dilarang Berbohong!</h3>
+    <div style="margin-top:8px;">Amsal 12:22 — "Bibir dusta adalah kekejian bagi TUHAN..."</div>
+    <div style="margin-top:12px;">Jika kamu bertobat, game akan dilanjutkan.</div>
+  </div>`;
+  showInfoModal(html,'Saya Bertobat', ()=>{
+    announce('Terima kasih sudah bertobat. Lanjut bermain.');
+    // return to opponentTurn so player can give honest feedback
+    show('opponentTurn');
+  });
+}
+
+/* small modal helpers (no alert()) */
+function showConfirm(title,message,yesCb,noCb){
   const overlay = document.createElement('div'); overlay.className='modal-overlay';
   overlay.innerHTML = `<div class="modal"><h3 style="margin:0 0 8px;">${title}</h3><div style="margin-bottom:12px;">${message}</div><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="modNo" class="ghost small">Tidak</button><button id="modYes">Iya</button></div></div>`;
   document.body.appendChild(overlay);
   overlay.querySelector('#modYes').onclick = ()=>{ yesCb(); overlay.remove(); };
-  overlay.querySelector('#modNo').onclick = ()=>{ noCb&&noCb(); overlay.remove(); };
+  overlay.querySelector('#modNo').onclick = ()=>{ noCb && noCb(); overlay.remove(); };
 }
-
-/* modal info (cheat / surrender) */
 function showInfoModal(htmlContent, okText='OK', okCb){
   const overlay = document.createElement('div'); overlay.className='modal-overlay';
   overlay.innerHTML = `<div class="modal">${htmlContent}<div style="display:flex;justify-content:flex-end;margin-top:10px;"><button id="infoOk">${okText}</button></div></div>`;
@@ -241,190 +384,31 @@ function showInfoModal(htmlContent, okText='OK', okCb){
   overlay.querySelector('#infoOk').onclick = ()=>{ okCb && okCb(); overlay.remove(); };
 }
 
-/* -------------------------
-   Auto-focus for guess inputs
-   ------------------------- */
-const guessInputs = ['g1','g2','g3','g4'].map(id=>$(id));
-guessInputs.forEach((inp,idx)=>{
-  inp.addEventListener('input',()=>{
-    if(inp.value.length===1 && idx < guessInputs.length-1) guessInputs[idx+1].focus();
-  });
-});
-
-/* -------------------------
-   Theme & music toggles
-   ------------------------- */
-$('darkToggle').addEventListener('change', (e)=>{
-  document.documentElement.style.background = e.target.checked ? 'linear-gradient(135deg,#2b002b,#4a004a)' : '';
-  if(e.target.checked){
-    document.querySelectorAll('.app, .screen').forEach(el=>el.style.background = '#3a003a');
-  } else {
-    document.querySelectorAll('.app, .screen').forEach(el=>el.style.background = '');
-  }
-});
-$('musicToggle').addEventListener('change', (e)=>{
-  const audio = $('bgMusic');
-  if(e.target.checked) audio.play().catch(()=>{}); else audio.pause();
-});
-
-/* -------------------------
-   Local vs-bot logic
-   ------------------------- */
-const allComb = (()=>{
-  const out=[]; const d='123456789'.split('');
-  function back(cur){
-    if(cur.length===4){ out.push(cur.join('')); return; }
-    for(const x of d) if(!cur.includes(x)){ cur.push(x); back(cur); cur.pop(); }
-  }
-  back([]); return out;
-})();
-let localBotSecret = '';
-function startVsBot(){
-  const n = $('name').value.trim(); const sec = $('secret').value.trim();
-  if(!n){ setStatus('Nama tidak boleh kosong'); return; }
-  if(!/^[1-9]{4}$/.test(sec) || new Set(sec).size!==4){ setStatus('Secret harus 4 angka unik (1-9)'); return; }
-  sessionStorage.setItem('localPlayerName', n);
-  sessionStorage.setItem('localPlayerSecret', sec);
-  localBotSecret = allComb[Math.floor(Math.random()*allComb.length)];
-  $('playerNameDisplay').textContent = '👤 '+n;
-  $('playerHistory').innerHTML=''; $('opponentHistory').innerHTML='';
-  show('playerTurn'); guessInputs[0].focus();
-}
-
-/* handle guess vs bot */
-$('guessBtn').addEventListener('click', ()=>{
-  const g = guessInputs.map(i=>i.value).join('');
-  if(sessionStorage.getItem('onlineRoom')) {
-    // Online path will be handled in module - do nothing here (module wires it)
-    const submitOnline = window.submitGuessOnline;
-    if(submitOnline){
-      submitOnline(g).catch(e=> setStatus('Error kirim: '+(e.message||e)));
-      guessInputs.forEach(i=>i.value=''); guessInputs[0].focus();
-    } else {
-      setStatus('Fitur online belum siap.');
-    }
-    return;
-  }
-
-  if(!/^[1-9]{4}$/.test(g) || new Set(g).size!==4){ setStatus('Tebakan harus 4 angka unik (1-9)'); return; }
-  const res = match(g, localBotSecret);
-  $('result').textContent = `Hasil: ${res}`;
-  $('playerHistory').innerHTML += `<div><span style="font-weight:700">${g}</span> → ${res}</div>`;
-  if(res===4){ showEnd('Kamu menang! 🎉'); return; }
-
-  // BOT TURN -> show opponentTurn and feedback buttons for user (user must feedback honestly)
-  setTimeout(()=>{
-    const botGuess = allComb[Math.floor(Math.random()*allComb.length)];
-    // set pending bot guess into the UI
-    $('opponentGuess').textContent = botGuess;
-    // store pending guess locally for feedback check
-    window._pendingLocalBotGuess = botGuess;
-    show('opponentTurn');
-  }, 600);
-});
-
-/* feedback row (for opponentTurn) */
-document.querySelectorAll('.feedback-row button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const v = Number(btn.getAttribute('data-v'));
-    // if local bot pending
-    const pending = window._pendingLocalBotGuess;
-    if(pending){
-      const real = match(pending, sessionStorage.getItem('localPlayerSecret'));
-      if(v !== real){
-        // liar => show cheat modal
-        showCheat('feedback');
-        return;
-      }
-      // honest: accept, update history, check win
-      $('opponentHistory').innerHTML += `<div><span style="font-weight:700">${pending}</span> → ${v}</div>`;
-      if(v===4){ showEnd('Bot menang 🤖'); return; }
-      // continue: back to player turn
-      window._pendingLocalBotGuess = null;
-      show('playerTurn');
-      setStatus('Giliranmu');
-    } else {
-      // online pending (room.pendingGuess handled by module)
-      if(window.handleLocalFeedbackForPending) {
-        window.handleLocalFeedbackForPending(v).catch(e=> setStatus('Error feedback: '+(e.message||e)));
-      } else {
-        setStatus('Tidak ada tebakan untuk di-feedback.');
-      }
-    }
-  });
-});
-
-/* clear guess inputs helper */
-$('clearBtn').addEventListener('click', ()=>{ guessInputs.forEach(i=>i.value=''); guessInputs[0].focus(); $('result').textContent=''; });
-
-/* play again */
-$('btnPlayAgain').addEventListener('click', ()=> location.reload());
-
-/* surrender button behavior (confirm modal -> show surrender screen with verse -> reload) */
-function handleSurrender(){
-  showConfirm('Menyerah?', 'Yakin ingin menyerah? Kamu akan dinyatakan kalah.', ()=>{
-    // on confirm -> show surrender info and reload after short moment
-    const html = `<div style="text-align:center;">
-      <img class="surrender-img" src="IMG-20251016-WA0019.jpg" alt="Menyerah">
-      <h3>😢 Kamu menyerah</h3>
-      <div style="margin-top:8px;font-weight:600;">Filipi 4:13 — "Segala perkara dapat kutanggung..."</div>
-      <div style="margin-top:8px;">Halaman akan dimuat ulang sekarang...</div>
-    </div>`;
-    showInfoModal(html, 'Oke', ()=>{
-      // reload immediately (user asked reload)
-      location.reload();
-    });
-  }, ()=> {
-    // cancel -> nothing, back to current screen; keep playing
-    setStatus('Lanjut bermain');
-  });
-}
-$('btnSurrender').addEventListener('click', handleSurrender);
-$('btnSurrender2').addEventListener('click', handleSurrender);
-
-/* cheat modal when lying */
-function showCheat(from){
-  const html = `<div style="text-align:center;">
-    <img class="surrender-img" src="IMG-20251006-WA0031.jpg" alt="Jangan Curang">
-    <h3>🚫 Dilarang Berbohong!</h3>
-    <div style="margin-top:8px;">Amsal 12:22 — "Bibir dusta adalah kekejian bagi TUHAN..."</div>
-    <div style="margin-top:10px;">Silakan tekan "Saya Bertobat" untuk melanjutkan.</div>
-  </div>`;
-  showInfoModal(html, 'Saya Bertobat', ()=>{
-    // continue game: if was feedback situation (local bot), return to opponentTurn to allow honest feedback
-    if(from === 'feedback'){
-      // clear pending if any or keep
-      // return to opponentTurn so user can give honest feedback
-      setStatus('Silakan beri feedback yang jujur');
-      show('opponentTurn');
-    } else {
-      setStatus('Dilanjutkan');
-    }
-  });
-}
-
 /* show end */
-function showEnd(msg){
+function showEnd(msg, win){
   $('endMsg').textContent = msg;
   show('endScreen');
 }
 
-/* wire welcome buttons */
-$('btnVsBot').addEventListener('click', ()=> startVsBot());
-$('btnMabar').addEventListener('click', ()=> { show('onlineMenu'); setStatus('Mode online — buat/gabung room'); });
-$('btnBackFromOnline').addEventListener('click', ()=> show('welcome'));
+/* Play again */
+$('btnPlayAgain').addEventListener('click', ()=> location.reload());
 
-/* enlarge join input focus & UX */
+/* UX tweaks */
+$('btnMabar').addEventListener('click', ()=> { show('onlineMenu'); announce('Mode online — buat/gabung room'); });
+$('btnBackFromOnline').addEventListener('click', ()=> show('welcome'));
+$('btnHistory').addEventListener('click', ()=> announce('Riwayat ada pada panel permainan'));
+
+/* style join/room input */
 $('joinCode').style.letterSpacing = '6px';
 $('roomCode').style.letterSpacing = '6px';
 
-/* -------------------------
-   Firebase (module-like) below
-   - Uses pendingGuess pattern:
-     - submitGuessOnline writes room.pendingGuess = { by: role, guess }
-     - the other client sees pendingGuess and must press feedback (0..4)
-     - on honest feedback the receiver writes history entry and clears pendingGuess and changes turn
-   ------------------------- */
+/* =========================
+   Firebase module (mabar)
+   ========================= */
+/* NOTE:
+   - Pastikan file gambar & audio ada di repo (nama persis).
+   - Pastikan databaseURL cocok dengan projectmu.
+*/
 </script>
 
 <script type="module">
@@ -432,7 +416,7 @@ $('roomCode').style.letterSpacing = '6px';
   import { getDatabase, ref, set, get, update, onValue, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-  // --- PENTING: ganti databaseURL jika beda di projectmu ---
+  // --- SESUAIKAN databaseURL jika perlu ---
   const firebaseConfig = {
     apiKey: "AIzaSyCqgr3gYyc4oFg69xphOWPctvzgCisyL-I",
     authDomain: "game-tebak-angka-2025.firebaseapp.com",
@@ -448,33 +432,33 @@ $('roomCode').style.letterSpacing = '6px';
   const db = getDatabase(app);
   const auth = getAuth();
 
-  // sign-in anonymous
-  signInAnonymously(auth).catch(e => console.warn('Anon sign-in failed', e));
+  signInAnonymously(auth).catch(e => { console.warn('Anon sign-in failed', e); });
   onAuthStateChanged(auth, u => { if(u) console.log('anon uid:', u.uid); });
 
-  // helpers
   const $ = id => document.getElementById(id);
+
   function makeRoomCode(){ return Math.random().toString(36).replace(/[^A-Z0-9]/ig,'').substring(2,7).toUpperCase(); }
 
-  // generate room code (UI)
+  // Wire generate room in module (btnGen already wired earlier but we ensure session + status)
   $('btnGen').addEventListener('click', ()=> {
     const c = makeRoomCode();
     $('roomCode').value = c;
     sessionStorage.setItem('roomCode', c);
-    setStatus('Kode room dibuat: ' + c);
+    announce('Kode room dibuat: ' + c);
   });
 
-  // goToOnlineSetup (open modal) for host/join
+  // goToOnlineSetup used by host/join buttons
   window.goToOnlineSetup = async function(isHost){
     let code = sessionStorage.getItem('roomCode') || '';
     if(!isHost){
       const j = $('joinCode').value.trim().toUpperCase();
-      if(!j){ setStatus('Masukkan kode room untuk bergabung'); return; }
+      if(!j){ announce('Masukkan kode room untuk bergabung'); return; }
       code = j;
     } else {
-      if(!code || code === '') { setStatus('Buat kode room terlebih dahulu'); return; }
+      if(!code){ announce('Buat kode room terlebih dahulu'); return; }
     }
-    // build modal
+
+    // Show small modal for name & secret (reuses prior UI approach)
     const wrapper = document.createElement('div');
     wrapper.id = 'onlineSetupWrapper';
     wrapper.style = 'position:fixed;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:999;';
@@ -490,32 +474,26 @@ $('roomCode').style.letterSpacing = '6px';
         </div>
       </div>`;
     document.body.appendChild(wrapper);
-
     wrapper.querySelector('#onlineCancel').onclick = ()=> wrapper.remove();
     wrapper.querySelector('#onlineStartBtn').onclick = async ()=>{
       const name = wrapper.querySelector('#onlineName').value.trim();
       const secret = wrapper.querySelector('#onlineSecret').value.trim();
-      if(!name){ setStatus('Nama tidak boleh kosong'); return; }
-      if(!/^[1-9]{4}$/.test(secret) || new Set(secret).size!==4){ setStatus('Secret harus 4 angka unik 1-9'); return; }
+      if(!name){ announce('Nama tidak boleh kosong'); return; }
+      if(!/^[1-9]{4}$/.test(secret) || new Set(secret).size!==4){ announce('Secret harus 4 angka unik 1-9'); return; }
       sessionStorage.setItem('onlineRoom', code);
       sessionStorage.setItem('isHost', isHost ? 'true' : 'false');
       sessionStorage.setItem('onlineName', name);
       sessionStorage.setItem('onlineSecret', secret);
       wrapper.remove();
-      setStatus('Menyiapkan room...');
+      announce('Menyiapkan room...');
       try{
-        if(isHost){
-          await createRoomOnFirebase(code, name, secret);
-        } else {
-          await joinRoomOnFirebase(code, name, secret);
-        }
-      } catch(err){
-        setStatus(err.message || 'Gagal membuat/bergabung room');
-      }
+        if(isHost) await createRoomOnFirebase(code, name, secret);
+        else await joinRoomOnFirebase(code, name, secret);
+      } catch(err){ announce(err.message || 'Gagal membuat/bergabung room'); }
     };
   };
 
-  // create room
+  // create/join room
   async function createRoomOnFirebase(roomCode, playerName, secret){
     const roomRef = ref(db, 'rooms/' + roomCode);
     await set(roomRef, {
@@ -523,12 +501,11 @@ $('roomCode').style.letterSpacing = '6px';
       guest: null,
       state: 'waiting',
       turn: 'host',
+      pendingGuess: null,
       createdAt: serverTimestamp()
     });
     listenRoom(roomCode);
   }
-
-  // join room
   async function joinRoomOnFirebase(roomCode, playerName, secret){
     const roomRef = ref(db, 'rooms/' + roomCode);
     const snap = await get(roomRef);
@@ -544,122 +521,114 @@ $('roomCode').style.letterSpacing = '6px';
   function listenRoom(roomCode){
     const rref = ref(db, 'rooms/' + roomCode);
     if(roomUnsub) roomUnsub();
-    const off = onValue(rref, (snap)=>{
-      const room = snap.val();
-      onRoomUpdate(room, roomCode);
-    });
+    const off = onValue(rref, (snap)=> { onRoomUpdate(snap.val(), roomCode); });
     roomUnsub = ()=> off();
   }
 
-  // helper to compute match
+  // helpers
   function matchLocal(a,b){ let c=0; for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c; }
 
-  // handle incoming room updates
   async function onRoomUpdate(room, code){
-    if(!room) { setStatus('Room dibubarkan'); return; }
+    if(!room){ announce('Room telah dibubarkan'); return; }
     const isHost = sessionStorage.getItem('isHost') === 'true';
     const myRole = isHost ? 'host' : 'guest';
-    // update secret table: show my secret locally
+    // show my secret locally
     const tbl = $('playerSecretTable'); tbl.innerHTML = '';
     const mySecret = isHost ? room.host?.secret : room.guest?.secret;
     const secShow = mySecret || '????';
     for(const ch of secShow) { const d = document.createElement('div'); d.textContent = ch; tbl.appendChild(d); }
 
-    // update histories
+    // histories
     $('playerHistory').innerHTML = ''; $('opponentHistory').innerHTML = '';
-    if(room.hostHistory) Object.values(room.hostHistory).forEach(it => $('playerHistory').innerHTML += `<div><span style="font-weight:700">${it.guess}</span> → ${it.result}</div>`);
-    if(room.guestHistory) Object.values(room.guestHistory).forEach(it => $('opponentHistory').innerHTML += `<div><span style="font-weight:700">${it.guess}</span> → ${it.result}</div>`);
+    if(room.hostHistory) Object.values(room.hostHistory).forEach(it => $('playerHistory').innerHTML += `<div><strong>${it.guess}</strong> → ${it.result}</div>`);
+    if(room.guestHistory) Object.values(room.guestHistory).forEach(it => $('opponentHistory').innerHTML += `<div><strong>${it.guess}</strong> → ${it.result}</div>`);
 
-    // handle pendingGuess (if someone submitted a guess and waiting feedback)
+    // pendingGuess handling
     if(room.pendingGuess){
-      const pg = room.pendingGuess; // {by:'host'|'guest', guess: '1234', ts}
-      // if pending guess is made by other role => we must feedback
+      const pg = room.pendingGuess; // {by:'host'|'guest', guess, ts}
       if(pg.by !== myRole){
+        // other player's guess — we must feedback
         $('opponentGuess').textContent = pg.guess;
-        // store the pending info to be used by feedback button handler
         window._pendingOnline = { code, pg, room };
         show('opponentTurn');
-        setStatus('Lawan menebak — berikan feedback (0–4)');
+        announce('Lawan menebak — berikan feedback (0–4)');
         return;
       } else {
-        // pending by me (we sent guess) -> waiting other to feedback
+        // pending by me — waiting feedback
         $('opponentGuess').textContent = 'Menunggu feedback lawan...';
         show('opponentTurn');
-        setStatus('Menunggu lawan memberi feedback');
+        announce('Menunggu lawan memberi feedback');
         return;
       }
     }
 
     // no pending guess -> normal state
     if(room.state === 'waiting'){
-      // host waiting guest
+      // host waiting for guest
       if(isHost){
         $('opponentTitle').textContent = 'Menunggu pemain bergabung...';
         show('opponentTurn');
-        setStatus('Room siap, tunggu pemain masuk (kode: '+code+')');
+        announce('Room siap, tunggu pemain masuk (kode: ' + code + ')', 6000);
       } else {
-        show('onlineMenu'); setStatus('Hubungkan sebagai guest gagal (tunggu host buat room)');
+        // guest waiting? show menu
+        show('onlineMenu');
+        announce('Menunggu host...'); 
       }
     } else if(room.state === 'playing'){
-      // determine whose turn
-      const turn = room.turn; // 'host' or 'guest'
+      const turn = room.turn;
       const oppName = isHost ? room.guest?.name : room.host?.name;
       if(turn === myRole){
         $('playerTurnTitle').textContent = `Giliranmu — Tebak ${oppName || 'Lawan'}`;
         show('playerTurn');
-        setStatus('Giliranmu');
+        announce('Giliranmu');
       } else {
         $('opponentTitle').textContent = `Giliran ${oppName || 'Lawan'}`;
         $('opponentGuess').textContent = 'Menunggu...';
         show('opponentTurn');
-        setStatus('Tunggu lawan mengirim tebakan');
+        announce('Tunggu lawan mengirim tebakan');
       }
     } else if(room.state === 'ended'){
       const winner = room.winner;
       const winnerName = winner === 'host' ? room.host?.name : room.guest?.name;
-      showEndOnline(`${winnerName} menang (Online)`);
+      $('endMsg').textContent = winnerName + ' menang (Online)';
+      show('endScreen');
     }
   }
 
-  // show end for online
-  function showEndOnline(msg){
-    $('endMsg').textContent = msg;
-    show('endScreen');
-  }
-
-  // submit guess online -> writes pendingGuess (instead of immediate history)
+  // submit guess online -> write pendingGuess
   window.submitGuessOnline = async function(guessStr){
     const code = sessionStorage.getItem('onlineRoom');
-    if(!code) { setStatus('Belum terhubung ke room'); return; }
+    if(!code) { announce('Belum terhubung ke room'); return; }
     const isHost = sessionStorage.getItem('isHost') === 'true';
     const role = isHost ? 'host' : 'guest';
-    if(!/^[1-9]{4}$/.test(guessStr) || new Set(guessStr).size!==4){ setStatus('Tebakan harus 4 angka unik'); return; }
-
-    // write pendingGuess field
+    if(!/^[1-9]{4}$/.test(guessStr) || new Set(guessStr).size!==4){ announce('Tebakan harus 4 angka unik'); return; }
     const roomRef = ref(db, 'rooms/' + code);
     await update(roomRef, { pendingGuess: { by: role, guess: guessStr, ts: serverTimestamp() } });
-    setStatus('Tebakan dikirim, menunggu feedback lawan...');
+    announce('Tebakan dikirim, menunggu feedback lawan...');
   }
 
-  // when local user presses feedback on pending online guess
+  // handle feedback by local user for online pending
   window.handleLocalFeedbackForPending = async function(feedbackValue){
     const pending = window._pendingOnline;
-    if(!pending) { setStatus('Tidak ada tebakan untuk diberi feedback'); return; }
+    if(!pending) { announce('Tidak ada tebakan untuk diberi feedback'); return; }
     const { code, pg } = pending;
-    const isHost = sessionStorage.getItem('isHost') === 'true';
-    const role = isHost ? 'host' : 'guest';
-    // compute real match using our stored secret
     const mySecret = sessionStorage.getItem('onlineSecret') || '';
     const real = matchLocal(pg.guess, mySecret);
     if(feedbackValue !== real){
-      // lying detected -> show cheat screen (local), do not update DB; require repentance
-      // show cheat modal (use parent window function)
-      window.parent && window.parent.showCheat ? window.parent.showCheat('feedback') : null;
-      // also use page's function showCheat if present
-      if(typeof window.showCheat === 'function') window.showCheat('feedback');
+      // lying detected -> show cheat modal with image IMG-20251016-WA0019.jpg
+      const html = `<div style="text-align:center;">
+        <img class="surrender-img" src="IMG-20251016-WA0019.jpg" alt="Jangan Curang" onclick="openLightbox('IMG-20251016-WA0019.jpg')">
+        <h3>🚫 Dilarang Berbohong!</h3>
+        <div style="margin-top:8px;">Amsal 12:22 — "Bibir dusta adalah kekejian bagi TUHAN..."</div>
+        <div style="margin-top:12px;">Tekan "Saya Bertobat" untuk melanjutkan.</div>
+      </div>`;
+      showInfoModal(html,'Saya Bertobat', ()=>{
+        announce('Terima kasih sudah bertobat — harap beri feedback yang jujur.');
+        show('opponentTurn');
+      });
       return;
     }
-    // honest -> write history on DB and clear pendingGuess, update turn
+    // honest -> write history and advance turn or end
     const histPath = (pg.by === 'host') ? 'rooms/'+code+'/hostHistory' : 'rooms/'+code+'/guestHistory';
     const newRef = push(ref(db, histPath));
     await set(newRef, { guess: pg.guess, result: feedbackValue, ts: serverTimestamp() });
@@ -670,28 +639,48 @@ $('roomCode').style.letterSpacing = '6px';
       const next = pg.by === 'host' ? 'guest' : 'host';
       await update(roomRef, { turn: next, pendingGuess: null });
     }
-    // clear local pending
     window._pendingOnline = null;
-    setStatus('Feedback dikirim — giliran beralih');
+    announce('Feedback dikirim — giliran beralih');
   };
 
-  // wire Make/Join start buttons to open modal
+  // wire Make/Join Start buttons to open modal
   $('btnMakeStart').addEventListener('click', ()=> window.goToOnlineSetup(true));
   $('btnJoinStart').addEventListener('click', ()=> window.goToOnlineSetup(false));
 
-  // cleanup room on unload if host created it and wants to remove (optional)
-  window.addEventListener('beforeunload', async (ev)=>{
-    const room = sessionStorage.getItem('onlineRoom');
-    if(room){
-      // do nothing forced; we avoid confirm() popup to keep UX simple
-      // optionally remove room if you want:
-      // await remove(ref(db,'rooms/'+room));
+  // when user uses Start (Host/Join) buttons in the non-modal UI (these were already bound above),
+  // expose cleanup on surrender (to update DB if you want). We'll provide a small helper:
+  window.cleanupRoomOnSurrender = async function(){
+    const code = sessionStorage.getItem('onlineRoom');
+    if(!code) return;
+    // set room state ended and winner to other role
+    const isHost = sessionStorage.getItem('isHost') === 'true';
+    const loser = isHost ? 'host' : 'guest';
+    const winner = isHost ? 'guest' : 'host';
+    const roomRef = ref(db, 'rooms/' + code);
+    await update(roomRef, { state: 'ended', winner: winner });
+    // optional: do not remove room to preserve history
+  };
+
+  // expose for debugging
+  window._firebase = { db, auth };
+
+  // link UI start/joins in main (some buttons outside module)
+  document.getElementById('btnMakeStart').addEventListener('click', ()=> window.goToOnlineSetup(true));
+  document.getElementById('btnJoinStart').addEventListener('click', ()=> window.goToOnlineSetup(false));
+
+  // wire main VS BOT button (outside module)
+  document.getElementById('btnVsBot').addEventListener('click', ()=> startVsBot());
+
+  // bind guess button also to online when onlineRoom set (already in main script but reinforce)
+  document.getElementById('guessBtn').addEventListener('click', ()=>{
+    const g = [ $('g1').value, $('g2').value, $('g3').value, $('g4').value ].join('');
+    if(sessionStorage.getItem('onlineRoom')){
+      window.submitGuessOnline(g).catch(e=> announce('Error: '+(e.message||e)));
+      // clear inputs
+      $('g1').value=$('g2').value=$('g3').value=$('g4').value='';
     }
   });
 
-  // expose debug
-  window._firebase = { db, auth };
 </script>
-
 </body>
 </html>
