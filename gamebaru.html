@@ -3,10 +3,56 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Tebak 4 Angka — Mabar Hybrid 💖</title>
-<!-- CSS: gabungan bot & mabar -->
+<title>Tebak 4 Angka — vs Bot & Mabar</title>
 <style>
-/* ... copy semua CSS bot dari HTML terakhir ... */
+/* ===== CSS utama ===== */
+body { font-family: "Poppins", sans-serif; background: linear-gradient(135deg, #ffe6f0, #ffd7e5); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+.screen { display: none; text-align: center; background: #fff; padding: 24px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 380px; max-height: 90vh; overflow-y: auto; position: relative; }
+.active { display: block; }
+h1 { color: #b30057; font-size: 24px; margin-bottom: 12px; }
+input[type=text] { text-align: center; width: 80%; font-size: 20px; padding: 10px; margin: 8px; border: 2px solid #ffcce0; border-radius: 10px; }
+button { background: #ff7aa2; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: 0.2s; }
+button:hover { background: #ff5d8a; transform: scale(1.05); }
+.num-btn { width: 50px; height: 50px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid #eee; cursor: pointer; margin: 6px; background: #fff0f5; color: #b30057; transition: all .2s; }
+.num-btn:hover { background: #ffd6e8; transform: scale(1.1); }
+.table-secret { display: flex; justify-content: center; gap: 8px; margin: 10px 0 20px; }
+.table-secret div { background: #d2b48c; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; border-radius: 6px; font-weight: 700; }
+.bot-box { background: linear-gradient(135deg, #ffccd5, #d2b48c); color: #5a2c2c; border-radius: 10px; padding: 20px; font-size: 26px; font-weight: 800; width: 160px; margin: 12px auto; }
+.history { background: #fff6f9; border-radius: 10px; padding: 10px; margin-top: 12px; text-align: left; max-height: 180px; overflow-y: auto; font-size: 14px; line-height: 1.6; }
+.history span { color: #b30057; font-weight: 600; }
+.rules { text-align: left; background: #fff0f5; border-radius: 10px; padding: 12px 16px; margin-top: 14px; font-size: 14px; color: #5a2c2c; }
+.guess-grid { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+.guess-grid input { width: 50px; height: 50px; border-radius: 10px; font-size: 22px; font-weight: bold; border: 2px solid #ffb6c1; color: #b30057; text-align: center; }
+#playerNameDisplay { position: absolute; top: 12px; left: 12px; color: #b30057; font-weight: 700; font-size: 14px; }
+.surrender-btn { position: absolute; top: 10px; right: 14px; background: #ff5d8a; color: white; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+/* Lightbox popup tengah */
+#lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 240, 245, 0.3); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 999; }
+#lightbox img { width: 320px; max-width: 90%; border-radius: 16px; border: 4px solid #ff7aa2; box-shadow: 0 8px 25px rgba(0,0,0,0.2); animation: pop .3s ease; }
+@keyframes pop {from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);} }
+.verse { margin-top: 12px; background: #fff0f5; border-radius: 10px; padding: 10px; color: #5a2c2c; font-size: 13px; font-style: italic; }
+#endScreen img, #cheatScreen img, #surrenderScreen img { width: 160px; height: 160px; border-radius: 50%; margin: 16px 0; object-fit: cover; border: 4px solid #ff7aa2; cursor: pointer; transition: 0.3s; }
+#endScreen img:hover, #cheatScreen img:hover, #surrenderScreen img:hover { transform: scale(1.05); }
+#endDetails, #cheatDetails, #surrenderDetails { background: #fff0f5; border-radius: 10px; padding: 10px; color: #5a2c2c; font-weight: 600; margin-top: 8px; }
+#errorScreen { background: #8b0000; color: #fff; text-align: center; }
+.btn-row { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+/* Switch pojok kiri atas */
+#topSwitches { position: fixed; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+.switch { position: relative; display: inline-block; width: 60px; height: 28px; }
+.switch input { display: none; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ffb6c1; border-radius: 34px; transition: 0.3s; }
+.slider:before { position: absolute; content: "🌙"; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; }
+input:checked + .slider { background-color: #b30057; }
+input:checked + .slider:before { transform: translateX(32px); content: "☀️"; }
+.slider.music { background-color: #ffd1dc; }
+.slider.music:before { content: "🎵"; }
+input:checked + .slider.music:before { content: "🔊"; }
+/* Mode gelap */
+body.dark { background: linear-gradient(135deg, #2b002b, #4a004a); color: #f8d8e8; }
+body.dark .screen { background: #3a003a; color: #f8d8e8; box-shadow: 0 6px 15px rgba(0,0,0,0.4); }
+body.dark button { background: #a34a78; color: white; }
+body.dark button:hover { background: #c15a8f; }
+body.dark .history { background: #4a004a; color: #fbd7e8; }
+body.dark .rules { background: #4a004a; color: #ffe6f0; }
 </style>
 </head>
 <body>
@@ -23,42 +69,66 @@
   </label>
 </div>
 
+<!-- Audio Musik -->
 <audio id="bgMusic" src="Kasih Putih (Acoustic).mp3" loop></audio>
 
+<!-- Nama pemain -->
 <div id="playerNameDisplay"></div>
 
-<!-- Layar awal: pilih lawan -->
+<!-- ===== Layar sambutan ===== -->
 <div id="welcome" class="screen active">
-  <h1>🎮 Selamat Datang di Tebak 4 Angka 💖</h1>
-  <input id="name" placeholder="Nama Pemain"><br>
-  <button onclick="chooseBot()">🎯 Lawan Bot</button>
-  <button onclick="chooseOnline()">🌐 Main Online</button>
-</div>
-
-<!-- Layar Bot -->
-<div id="botScreen" class="screen">
-  <!-- Copy semua layar bot dari HTML bot terakhir -->
-</div>
-
-<!-- Layar Online Multiplayer -->
-<div id="onlineScreen" class="screen">
-  <h1>🌐 Tebak 4 Angka Online</h1>
-  <input id="roomCodeInput" placeholder="Masukkan kode room..."><br>
-  <button id="createRoom">🔑 Buat Room</button>
-  <button id="joinRoom">➡️ Gabung Room</button>
-  <div id="onlineLog"></div>
-  <div id="onlineGame" style="display:none;">
-    <h3>Room: <span id="roomCodeDisplay"></span></h3>
-    <input id="onlineGuess" maxlength="4" placeholder="Tebak 4 angka unik">
-    <button id="sendOnlineGuess">Kirim Tebakan</button>
-    <div id="onlineHistory"></div>
+  <h1>🎮 Selamat Datang di Game Tebak 4 Angka 🎀</h1>
+  <p>Masukkan namamu dan angka rahasiamu dulu ya!</p>
+  <input id="name" type="text" placeholder="Nama Pemain"><br>
+  <input id="secret" type="text" maxlength="4" placeholder="Angka Kamu"><br>
+  <div class="btn-row">
+    <button onclick="showHistoryScreen()">📜 Riwayat</button>
+    <button onclick="startGame()">Mulai Game ▶️</button>
+    <button onclick="show('mabarScreen')">🎮 Mabar</button>
+  </div>
+  <div class="rules">
+    <h2>📜 Peraturan & Petunjuk:</h2>
+    <ul>
+      <li>Gunakan angka <b>1–9</b> (tidak boleh 0 dan tidak boleh ganda).</li>
+      <li>Pemain dan bot bergantian menebak angka satu sama lain.</li>
+      <li>Jika hasil <b>4</b>, maka pemain yang menebak <b>MENANG!</b> 🎉</li>
+    </ul>
   </div>
 </div>
 
-<!-- Firebase SDK -->
+<!-- ===== Layar Mabar ===== -->
+<div id="mabarScreen" class="screen">
+  <h1>🎮 Mode Mabar</h1>
+  <div id="hostSection">
+    <h2>Host Game</h2>
+    <button onclick="generateRoom()">🔑 Generate Room</button>
+    <p>Kode Room: <span id="roomCode">-</span></p>
+    <p id="hostStatus">Menunggu pemain lain...</p>
+  </div>
+  <hr>
+  <div id="joinSection">
+    <h2>Join Party</h2>
+    <input type="text" id="joinRoomCode" placeholder="Masukkan Kode Room">
+    <button onclick="joinRoom()">Join</button>
+    <p id="joinStatus"></p>
+  </div>
+  <div class="btn-row">
+    <button onclick="show('welcome')">⬅️ Kembali</button>
+    <button id="startMabarBtn" style="display:none;" onclick="startMabar()">Mulai Game</button>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="this.style.display='none'">
+  <img id="lightboxImg" src="">
+</div>
+
+<!-- Layar lainnya (playerTurn, botTurn, cheatScreen, surrenderScreen, endScreen, errorScreen) -->
+<!-- Gunakan layout & script yang sudah ada di versi lawan bot sebelumnya -->
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -66,78 +136,91 @@ const firebaseConfig = {
   authDomain: "game-tebak-angka-2025.firebaseapp.com",
   databaseURL: "https://game-tebak-angka-2025-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "game-tebak-angka-2025",
-  storageBucket: "game-tebak-angka-2025.firebasestorage.app",
+  storageBucket: "game-tebak-angka-2025.appspot.com",
   messagingSenderId: "776244941517",
   appId: "1:776244941517:web:d9655d10c9532391084f84",
   measurementId: "G-S6NMHPNG7K"
 };
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ===== Pilih mode =====
-let playerName="", playerSecret="", botSecret="", currentRoom=null;
-function chooseBot(){ show('botScreen'); startBotGame(); }
-function chooseOnline(){ show('onlineScreen'); }
+// ===== Script utama game =====
+let playerSecret = "", botSecret = "", playerName = "";
+let currentRoom = "", isHost = false;
 
-// ===== Bot Game =====
-// Copy semua fungsi bot dari HTML terakhir: startGame(), submitGuess(), showBotTurn(), feedback(), end() ...
+// === Helper functions ===
+function toggleDarkMode(){document.body.classList.toggle("dark");}
+function toggleMusic(){const audio=document.getElementById("bgMusic");document.getElementById("musicToggle").checked ? audio.play() : audio.pause();}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active');}
+function isValid(s){ return /^[1-9]{4}$/.test(s) && new Set(s).size===4; }
+function error(msg){alert(msg);} // Sementara, bisa pakai layar error versi lama
 
-// ===== Online Multiplayer =====
-const onlineLog = document.getElementById('onlineLog');
-const onlineHistory = document.getElementById('onlineHistory');
-document.getElementById('createRoom').onclick = async ()=>{
-  if(!document.getElementById('name').value) return alert("Masukkan nama!");
-  playerName = document.getElementById('name').value;
-  const code = Math.floor(1000+Math.random()*9000);
-  playerSecret = generateSecret();
-  await set(ref(db,"rooms/"+code),{
-    status:"waiting",
-    players:{ [playerName]: playerSecret },
-    turn: playerName
+// Generate semua kombinasi 4 angka unik
+const all = [];
+(function gen() {
+  const d = ['1','2','3','4','5','6','7','8','9'];
+  function back(c) { if(c.length===4){ all.push(c.join('')); return; } for(const x of d) if(!c.includes(x)){ c.push(x); back(c); c.pop(); } }
+  back([]);
+})();
+
+// ===== Mabar =====
+function generateRoom(){
+  currentRoom = Math.random().toString(36).substring(2,6).toUpperCase();
+  document.getElementById('roomCode').textContent = currentRoom;
+  isHost = true;
+  set(ref(db,'rooms/'+currentRoom),{
+    host: playerName || "Host",
+    hostSecret: playerSecret || "",
+    turn: "host"
   });
-  joinOnlineRoom(code);
-};
-document.getElementById('joinRoom').onclick = async ()=>{
-  const code = document.getElementById('roomCodeInput').value.trim();
-  playerName = document.getElementById('name').value.trim();
-  playerSecret = generateSecret();
-  await set(ref(db,"rooms/"+code+"/players/"+playerName), playerSecret);
-  joinOnlineRoom(code);
-};
+  const roomRef = ref(db,'rooms/'+currentRoom+'/guest');
+  onValue(roomRef,(snap)=>{
+    if(snap.exists()){
+      document.getElementById('hostStatus').textContent = `🎉 ${snap.val()} sudah bergabung!`;
+      document.getElementById('startMabarBtn').style.display='inline-block';
+    }
+  });
+}
 
-function joinOnlineRoom(code){
-  currentRoom = code;
-  document.getElementById('roomCodeDisplay').textContent = code;
-  document.getElementById('onlineGame').style.display='block';
-  const roomRef = ref(db,"rooms/"+code);
-  onValue(roomRef, snap=>{
+function joinRoom(){
+  const code = document.getElementById('joinRoomCode').value.trim().toUpperCase();
+  if(!code) return alert("Masukkan kode room!");
+  const roomRef = ref(db,'rooms/'+code);
+  onValue(roomRef,(snap)=>{
+    if(snap.exists()){
+      currentRoom = code;
+      isHost = false;
+      update(ref(db,'rooms/'+code),{ guest: playerName, guestSecret: playerSecret });
+      document.getElementById('joinStatus').textContent = `Bergabung dengan host: ${snap.val().host}`;
+      document.getElementById('startMabarBtn').style.display='inline-block';
+    } else {
+      document.getElementById('joinStatus').textContent = "Room tidak ditemukan!";
+    }
+  });
+}
+
+function startMabar(){
+  show('playerTurn');
+  listenTurn();
+}
+
+function listenTurn(){
+  const roomRef = ref(db,'rooms/'+currentRoom);
+  onValue(roomRef,(snap)=>{
     const data = snap.val();
     if(!data) return;
-    onlineLog.innerHTML = "Pemain di room: "+Object.keys(data.players).join(", ");
+    const turn = data.turn;
+    if((turn==='host' && isHost) || (turn==='guest' && !isHost)){
+      document.getElementById('result').textContent="Giliranmu menebak!";
+    } else {
+      document.getElementById('result').textContent="Menunggu lawan...";
+    }
   });
-  document.getElementById('sendOnlineGuess').onclick = async ()=>{
-    const guess = document.getElementById('onlineGuess').value.trim();
-    if(guess.length!==4) return alert("Tebakan harus 4 angka unik!");
-    await push(ref(db,"rooms/"+code+"/guesses"), { player: playerName, guess });
-    onlineHistory.innerHTML += `<div>${playerName}: ${guess}</div>`;
-    document.getElementById('onlineGuess').value="";
-  };
 }
 
-// ===== Utils =====
-function generateSecret(){
-  const digits = ['1','2','3','4','5','6','7','8','9'];
-  let s="";
-  while(s.length<4){
-    const d = digits[Math.floor(Math.random()*digits.length)];
-    if(!s.includes(d)) s+=d;
-  }
-  return s;
-}
-
-function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function toggleDarkMode(){ document.body.classList.toggle("dark"); }
-function toggleMusic(){ const audio=document.getElementById("bgMusic"); document.getElementById("musicToggle").checked?audio.play():audio.pause();}
 </script>
 </body>
 </html>
+s
