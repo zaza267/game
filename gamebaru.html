@@ -5,19 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Tebak 4 Angka — vs Bot & Mabar</title>
 <style>
-/* ===== CSS utama ===== */
+/* ===== CSS utama (pink lembut) ===== */
+:root{
+  --bg1:#ffe6f0; --bg2:#ffd7e5; --accent:#b30057; --card:#fff; --muted:#5a2c2c;
+}
 body {
   font-family: "Poppins", sans-serif;
-  background: linear-gradient(135deg, #ffe6f0, #ffd7e5);
+  background: linear-gradient(135deg, var(--bg1), var(--bg2));
   display: flex; align-items: center; justify-content: center;
   height: 100vh; margin: 0;
 }
-.screen { display: none; text-align: center; background: #fff;
+.screen { display: none; text-align: center; background: var(--card);
   padding: 24px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
   width: 380px; max-height: 90vh; overflow-y: auto; position: relative;
 }
 .active { display: block; }
-h1 { color: #b30057; font-size: 24px; margin-bottom: 12px; }
+h1 { color: var(--accent); font-size: 24px; margin-bottom: 12px; }
 input[type=text] { text-align: center; width: 80%; font-size: 20px; padding: 10px;
   margin: 8px; border: 2px solid #ffcce0; border-radius: 10px;
 }
@@ -25,13 +28,13 @@ button { background: #ff7aa2; color: white; border: none; border-radius: 8px;
   padding: 10px 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   transition: 0.2s;
 }
-button:hover { background: #ff5d8a; transform: scale(1.05); }
+button:hover { background: #ff5d8a; transform: scale(1.03); }
 
 .num-btn { width: 50px; height: 50px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
   font-weight: 700; border: 1px solid #eee; cursor: pointer;
-  margin: 6px; background: #fff0f5; color: #b30057; transition: all .2s; }
-.num-btn:hover { background: #ffd6e8; transform: scale(1.1); }
+  margin: 6px; background: #fff0f5; color: var(--accent); transition: all .2s; }
+.num-btn:hover { background: #ffd6e8; transform: scale(1.05); }
 
 .table-secret { display: flex; justify-content: center; gap: 8px; margin: 10px 0 20px; }
 .table-secret div { background: #d2b48c; color: white; width: 40px; height: 40px;
@@ -44,330 +47,202 @@ button:hover { background: #ff5d8a; transform: scale(1.05); }
 
 .history { background: #fff6f9; border-radius: 10px; padding: 10px; margin-top: 12px;
   text-align: left; max-height: 180px; overflow-y: auto; font-size: 14px; line-height: 1.6; }
-.history span { color: #b30057; font-weight: 600; }
-
+.history span { color: var(--accent); font-weight: 600; }
 .rules { text-align: left; background: #fff0f5; border-radius: 10px;
-  padding: 12px 16px; margin-top: 14px; font-size: 14px; color: #5a2c2c; }
+  padding: 12px 16px; margin-top: 14px; font-size: 14px; color: var(--muted); }
 
 .guess-grid { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
 .guess-grid input { width: 50px; height: 50px; border-radius: 10px;
   font-size: 22px; font-weight: bold; border: 2px solid #ffb6c1;
-  color: #b30057; text-align: center; }
+  color: var(--accent); text-align: center; }
 
-#playerNameDisplay { position: absolute; top: 12px; left: 12px; color: #b30057; font-weight: 700; font-size: 14px; }
-
+#playerNameDisplay { position: absolute; top: 12px; left: 12px; color: var(--accent); font-weight: 700; font-size: 14px; }
 .surrender-btn { position: absolute; top: 10px; right: 14px;
   background: #ff5d8a; color: white; border-radius: 8px; padding: 6px 10px;
   font-size: 12px; cursor: pointer; }
 
-#lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(255, 240, 245, 0.3); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 999; }
-#lightbox img { width: 320px; max-width: 90%; border-radius: 16px; border: 4px solid #ff7aa2;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2); animation: pop .3s ease; }
-@keyframes pop {from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);} }
-
-.verse { margin-top: 12px; background: #fff0f5; border-radius: 10px; padding: 10px; color: #5a2c2c;
-  font-size: 13px; font-style: italic; }
-
-#endScreen img, #cheatScreen img, #surrenderScreen img { width: 160px; height: 160px; border-radius: 50%;
-  margin: 16px 0; object-fit: cover; border: 4px solid #ff7aa2; cursor: pointer; transition: 0.3s; }
-#endScreen img:hover, #cheatScreen img:hover, #surrenderScreen img:hover { transform: scale(1.05); }
-
-#endDetails, #cheatDetails, #surrenderDetails { background: #fff0f5; border-radius: 10px; padding: 10px; color: #5a2c2c; font-weight: 600; margin-top: 8px; }
-
-#errorScreen { background: #8b0000; color: #fff; text-align: center; }
-
-.btn-row { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
-
-#topSwitches { position: fixed; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
-.switch { position: relative; display: inline-block; width: 60px; height: 28px; }
-.switch input { display: none; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ffb6c1; border-radius: 34px; transition: 0.3s; }
-.slider:before { position: absolute; content: "🌙"; height: 22px; width: 22px;
-  left: 3px; bottom: 3px; background-color: white; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; }
-input:checked + .slider { background-color: #b30057; }
-input:checked + .slider:before { transform: translateX(32px); content: "☀️"; }
-
-.slider.music { background-color: #ffd1dc; }
-.slider.music:before { content: "🎵"; }
-input:checked + .slider.music:before { content: "🔊"; }
-
-body.dark { background: linear-gradient(135deg, #2b002b, #4a004a); color: #f8d8e8; }
-body.dark .screen { background: #3a003a; color: #f8d8e8; box-shadow: 0 6px 15px rgba(0,0,0,0.4); }
-body.dark button { background: #a34a78; color: white; }
-body.dark button:hover { background: #c15a8f; }
-body.dark .history { background: #4a004a; color: #fbd7e8; }
-body.dark .rules { background: #4a004a; color: #ffe6f0; }
+/* small responsive */
+@media (max-width:420px){
+  .screen{ width:92%; }
+}
 </style>
 </head>
 <body>
 
-<!-- Switch Dark Mode & Musik -->
-<div id="topSwitches">
-  <label class="switch">
-    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
-    <span class="slider"></span>
-  </label>
-  <label class="switch">
-    <input type="checkbox" id="musicToggle" onchange="toggleMusic()">
-    <span class="slider music"></span>
-  </label>
-</div>
-
-<!-- Audio Musik -->
-<audio id="bgMusic" src="Kasih Putih (Acoustic).mp3" loop></audio>
-
-<!-- Nama pemain -->
+<!-- Top info -->
 <div id="playerNameDisplay"></div>
 
-<!-- ===== Layar sambutan ===== -->
+<!-- WELCOME -->
 <div id="welcome" class="screen active">
-  <h1>🎮 Selamat Datang di Game Tebak 4 Angka 🎀</h1>
-  <p>Masukkan namamu dan angka rahasiamu dulu ya!</p>
+  <h1>🎮 Tebak 4 Angka — Main Sendiri / Mabar</h1>
+  <p>Masukkan namamu dan angka rahasiamu (1–9, 4 angka unik)</p>
   <input id="name" type="text" placeholder="Nama Pemain"><br>
-  <input id="secret" type="text" maxlength="4" placeholder="Angka Kamu"><br>
-  <div class="btn-row">
-    <button onclick="showHistoryScreen()">📜 Riwayat</button>
-    <button onclick="startGame()">🎯 Vs Bot</button>
-    <button onclick="show('onlineMenu')">🌐 Main Online (Mabar)</button>
+  <input id="secret" type="text" maxlength="4" placeholder="Angka Rahasiamu"><br>
+  <div style="margin-top:8px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+    <button id="btnHistory">📜 Riwayat</button>
+    <button id="btnVsBot">🎯 Vs Bot</button>
+    <button id="btnMabar">🌐 Mabar (Online)</button>
   </div>
   <div class="rules">
-    <h2>📜 Peraturan & Petunjuk:</h2>
+    <h3>Petunjuk singkat</h3>
     <ul>
-      <li>Gunakan angka <b>1–9</b> (tidak boleh 0 dan tidak boleh ganda).</li>
-      <li>Pemain dan bot bergantian menebak angka satu sama lain.</li>
-      <li>Jika hasil <b>4</b>, maka pemain yang menebak <b>MENANG!</b> 🎉</li>
+      <li>Gunakan angka <b>1–9</b>, tidak boleh 0 dan tidak boleh angka berulang.</li>
+      <li>Jika tebakan menghasilkan <b>4</b> angka posisi tepat, maka MENANG.</li>
     </ul>
   </div>
 </div>
 
-<!-- Lightbox -->
-<div id="lightbox" onclick="this.style.display='none'">
-  <img id="lightboxImg" src="">
-</div>
-
-<!-- Layar riwayat -->
-<div id="historyScreen" class="screen">
-  <h1>📜 Riwayat Permainan</h1>
-  <h2 style="color:#b30057; text-align:center; margin-bottom:10px;">🚧 COMING SOON 🚧</h2>
-  <div id="historyList"></div>
-  <button onclick="show('welcome')">⬅️ Kembali</button>
-</div>
-
-<!-- ===== Layar Mabar Online ===== -->
+<!-- ONLINE MENU -->
 <div id="onlineMenu" class="screen">
-  <h1>🌐 Main Online (Mabar)</h1>
-
+  <h1>🌐 Mabar — Buat / Gabung Room</h1>
   <div class="rules">
-    <p>Pilih salah satu:</p>
-    <ul>
-      <li><b>Make Room</b> untuk membuat ruang baru (kamu jadi host).</li>
-      <li><b>Join Room</b> untuk bergabung ke ruang teman.</li>
-    </ul>
+    <p>Pilih buat room atau gabung ke room teman. Kode room sederhana 5 karakter.</p>
   </div>
 
-  <!-- Bagian Make Room -->
-  <div style="margin-top:20px; background:#fff6f9; border-radius:10px; padding:16px;">
-    <h2>👑 Make Room</h2>
-    <p>Kode Room kamu:</p>
-    <div id="roomCode" style="font-size:22px; font-weight:bold; color:#b30057; margin:10px;">-----</div>
-    <button onclick="generateRoomCode()">🔑 Generate Room</button>
-    <br><br>
-    <button onclick="goToOnlineSetup(true)">Start ▶️</button>
+  <div style="background:#fff6f9;padding:14px;border-radius:10px;margin-top:10px;">
+    <h3>👑 Make Room</h3>
+    <div>Kode Room kamu:</div>
+    <div id="roomCode" style="font-size:20px;font-weight:700;color:var(--accent);margin:8px 0;">—</div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button id="btnGen">🔑 Generate</button>
+      <button id="btnMakeStart">Start</button>
+    </div>
   </div>
 
-  <!-- Bagian Join Room -->
-  <div style="margin-top:24px; background:#fff6f9; border-radius:10px; padding:16px;">
-    <h2>🤝 Join Room</h2>
-    <input id="joinCode" type="text" maxlength="5" placeholder="Masukkan kode room"><br>
-    <button onclick="goToOnlineSetup(false)">Start ▶️</button>
+  <div style="background:#fff6f9;padding:14px;border-radius:10px;margin-top:12px;">
+    <h3>🤝 Join Room</h3>
+    <input id="joinCode" maxlength="6" placeholder="Masukkan kode room"><br>
+    <div style="margin-top:8px;"><button id="btnJoinStart">Start</button></div>
   </div>
 
-  <br>
-  <button onclick="show('welcome')">⬅️ Kembali</button>
+  <div style="margin-top:12px;"><button id="btnBackFromOnline">⬅️ Kembali</button></div>
 </div>
 
-<!-- Layar pemain -->
+<!-- PLAYER TURN (used for vs bot & online when it's your turn) -->
 <div id="playerTurn" class="screen">
-  <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
-  <h1 id="playerTurnTitle">Tebak Angka</h1>
+  <div class="surrender-btn" id="btnSurrender">🏳️ Menyerah</div>
+  <h1 id="playerTurnTitle">Giliranmu — Tebak Angka</h1>
   <div class="guess-grid">
-    <input id="g1" maxlength="1">
-    <input id="g2" maxlength="1">
-    <input id="g3" maxlength="1">
-    <input id="g4" maxlength="1">
+    <input id="g1" maxlength="1" inputmode="numeric">
+    <input id="g2" maxlength="1" inputmode="numeric">
+    <input id="g3" maxlength="1" inputmode="numeric">
+    <input id="g4" maxlength="1" inputmode="numeric">
   </div>
-  <button id="guessBtn" onclick="submitGuess()">Kirim Tebakan</button>
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+    <button id="guessBtn">Kirim Tebakan</button>
+    <button id="clearBtn">Bersihkan</button>
+  </div>
   <p id="result"></p>
-  <button id="doneBtn" style="display:none;" onclick="afterBotFeedback()">Sudah ✅</button>
-  <h3>Riwayat Tebakanmu:</h3>
+  <h3>Riwayat Tebakan:</h3>
   <div class="history" id="playerHistory"></div>
+  <div style="margin-top:8px;"><button id="btnBackToMenu">🏠 Menu</button></div>
 </div>
 
-<!-- Layar bot / waiting (dipakai juga untuk menunggu giliran lawan saat online) -->
-<div id="botTurn" class="screen" style="background:linear-gradient(135deg,#ffe6f0,#d2b48c);">
-  <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
-  <h1 id="botTurnTitle">Giliran Lawan</h1>
+<!-- WAIT / OPPONENT TURN -->
+<div id="opponentTurn" class="screen">
+  <div class="surrender-btn" id="btnSurrender2">🏳️ Menyerah</div>
+  <h1 id="opponentTitle">Giliran Lawan</h1>
   <p>Angka rahasiamu:</p>
   <div id="playerSecretTable" class="table-secret"></div>
-  <div class="bot-box" id="botGuess">----</div>
-  <p id="feedbackPrompt">Beri tahu berapa angka yang benar:</p>
-  <div id="feedbackArea"></div>
-  <button id="nextTurnBtn" style="display:none;" onclick="nextTurn()">Sudah ✅</button>
-  <h3>Riwayat Tebakan Bot / Lawan:</h3>
-  <div class="history" id="botHistory"></div>
+  <div class="bot-box" id="opponentGuess">Menunggu...</div>
+  <div style="margin-top:8px;">Tunggu lawan mengirim tebakan...</div>
+  <h3>Riwayat Tebakan Lawan:</h3>
+  <div class="history" id="opponentHistory"></div>
+  <div style="margin-top:8px;"><button id="btnBackToMenu2">🏠 Menu</button></div>
 </div>
 
-<!-- Layar cheat -->
-<div id="cheatScreen" class="screen">
-  <img src="IMG-20251006-WA0031.jpg" alt="Jangan Curang" onclick="openLightbox(this)">
-  <h1>🚫 Jangan Curang!</h1>
-  <div id="cheatDetails">
-    <p>Kamu memberi feedback yang salah... 😔<br>Ingatlah untuk bermain jujur ya!</p>
-    <blockquote><b>Amsal 12:22</b> — "Bibir dusta adalah kekejian bagi TUHAN, tetapi orang yang berlaku setia dikenan-Nya."</blockquote>
-  </div>
-  <div class="verse">💡 “Hendaklah integritasmu nyata di setiap hal kecil.”</div>
-  <button onclick="forgiveCheat()">🙏 Saya Bertobat</button>
-</div>
-
-<!-- Layar menyerah -->
-<div id="surrenderScreen" class="screen">
-  <img src="IMG-20251016-WA0019.jpg" alt="Menyerah" onclick="openLightbox(this)">
-  <h1>😢 Yakin nih mau nyerah?</h1>
-  <div id="surrenderDetails">
-    <p>Kalau menyerah, kamu langsung dinyatakan kalah loh!</p>
-  </div>
-  <div class="verse">📖 <b>Filipi 4:13</b> — “Segala perkara dapat kutanggung di dalam Dia yang memberi kekuatan kepadaku.”</div>
-  <div class="btn-row">
-    <button onclick="cancelSurrender()">Tidak 😤</button>
-    <button onclick="giveUp()">Iya 😔</button>
-  </div>
-</div>
-
-<!-- Layar akhir -->
+<!-- END SCREEN -->
 <div id="endScreen" class="screen">
-  <img id="endImg" src="" alt="Foto Akhir" onclick="openLightbox(this)">
   <h1 id="endMsg"></h1>
   <div id="endDetails"></div>
-  <div id="endVerse" class="verse"></div>
-  <button onclick="location.reload()">Main Lagi 🔁</button>
-</div>
-
-<!-- Layar error -->
-<div id="errorScreen" class="screen">
-  <h1 id="errorMsg"></h1>
-  <button onclick="closeError()">Baiklah 😅</button>
+  <div style="margin-top:12px;"><button id="btnPlayAgain">Main Lagi</button></div>
 </div>
 
 <script>
-/* ===== Script game & switch (existing) ===== */
-function openLightbox(img){document.getElementById('lightboxImg').src=img.src;document.getElementById('lightbox').style.display='flex';}
-function toggleDarkMode(){document.body.classList.toggle("dark");}
-function toggleMusic(){const audio=document.getElementById("bgMusic");if(document.getElementById("musicToggle").checked) audio.play();else audio.pause();}
+/* ===== small DOM helper & game utils ===== */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);if(el)el.classList.add('active');}
+function $(id){return document.getElementById(id);} 
+function isValidSecret(s){return /^[1-9]{4}$/.test(s) && new Set(s).size===4}
+function match(a,b){let c=0;for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c}
 
-/* Generate semua kombinasi 4 angka unik */
-const all=[]; (function gen(){const d=['1','2','3','4','5','6','7','8','9'];
-function back(c){if(c.length===4){all.push(c.join(''));return}for(const x of d)if(!c.includes(x)){c.push(x);back(c);c.pop();} }
-back([]);})();
+/* ===== local vs-bot logic (kept simple) ===== */
+const allComb=[]; (function(){const d='123456789'.split(''); function back(c){ if(c.length===4){ allComb.push(c.join('')); return } for(const x of d) if(!c.includes(x)){ c.push(x); back(c); c.pop(); } } back([]);})();
+let localBotSecret='';
 
-let playerSecret="",botSecret="",possible=[...all],botLast="",playerName="";
-const playerHist=document.getElementById('playerHistory');
-const botHist=document.getElementById('botHistory');
+/* Auto-focus inputs */
+const guessInputs = ['g1','g2','g3','g4'].map(id=>$(id));
+guessInputs.forEach((inp,idx)=>{ inp.addEventListener('input',()=>{ if(inp.value.length===1 && idx<guessInputs.length-1) guessInputs[idx+1].focus(); }); });
 
-function isValid(s){return /^[1-9]{4}$/.test(s)&&new Set(s).size===4}
-function match(a,b){let c=0;for(let i=0;i<4;i++)if(a[i]===b[i])c++;return c}
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function error(msg){document.getElementById('errorMsg').textContent=msg;show('errorScreen');}
-function closeError(){if(playerSecret)show('playerTurn');else show('welcome');}
+/* ===== UI wiring ===== */
+$('btnVsBot').addEventListener('click',()=>{show('welcome'); alert('Isi nama + secret di form utama lalu tekan Start Vs Bot pada welcome jika ingin lawan bot.\nUntuk mabar, pilih Mabar.');});
+$('btnMabar').addEventListener('click',()=> show('onlineMenu'));
+$('btnBackFromOnline').addEventListener('click',()=> show('welcome'));
+$('btnBackToMenu').addEventListener('click',()=> show('welcome'));
+$('btnBackToMenu2').addEventListener('click',()=> show('welcome'));
+$('btnHistory').addEventListener('click',()=>{ show('welcome'); alert('Riwayat sederhana ada di panel permainan nanti.'); });
+$('btnPlayAgain').addEventListener('click',()=> location.reload());
+$('clearBtn').addEventListener('click',()=>{ guessInputs.forEach(i=>i.value=''); guessInputs[0].focus(); $('result').textContent=''; });
 
-function startGame(){
-  const n=document.getElementById('name').value.trim();
-  const sec=document.getElementById('secret').value.trim();
-  if(!n)return error("Nama tidak boleh kosong!");
-  if(!isValid(sec))return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
-  playerName=n; playerSecret=sec;
-  botSecret=all[Math.floor(Math.random()*all.length)];
-  possible=[...all];
-  document.getElementById('playerNameDisplay').textContent="👤 "+playerName;
-  const tbl=document.getElementById('playerSecretTable'); tbl.innerHTML=""; for(let ch of playerSecret){const cell=document.createElement('div');cell.textContent=ch;tbl.appendChild(cell);}
-  show('playerTurn'); g1.focus();
-}
+/* ===== Generate / UI helper for room code ===== */
+function makeRoomCode(){ return Math.random().toString(36).replace(/[^A-Z0-9]/ig,'').substring(2,7).toUpperCase(); }
+window.generateRoomCode = function(){ const code=makeRoomCode(); $('roomCode').textContent=code; sessionStorage.setItem('roomCodeTemp',code); }
+$('btnGen').addEventListener('click',()=> window.generateRoomCode());
 
-function submitGuess(){
-  const g=[g1.value,g2.value,g3.value,g4.value].join('');
-  if(!isValid(g))return error("Tebakan harus 4 angka unik (1–9, tanpa 0)!");
-  const m=match(g,botSecret);
-  document.getElementById('result').textContent=`Hasil bot: ${m}`;
-  playerHist.innerHTML+=`<div><span>${g}</span> → ${m}</div>`;
-  document.getElementById('guessBtn').style.display='none';
-  if(m===4){end("Kamu menang! 🎉", true);return;}
-  document.getElementById('doneBtn').style.display='inline-block';
-}
-
-function afterBotFeedback(){document.getElementById('doneBtn').style.display='none';clearGuess();showBotTurn();}
-function showBotTurn(){
-  botLast=possible[Math.floor(Math.random()*possible.length)];
-  document.getElementById('botGuess').textContent=botLast;
-  const fb=document.getElementById('feedbackArea'); fb.innerHTML=''; document.getElementById('nextTurnBtn').style.display='none';
-  for(let i=0;i<=4;i++){const b=document.createElement('div');b.className='num-btn';b.textContent=i;b.onclick=()=>feedback(i);fb.appendChild(b);}
-  show('botTurn');
-}
-function feedback(f){
-  const realMatch=match(botLast,playerSecret);
-  if(f!==realMatch){show('cheatScreen');return;}
-  const filtered=possible.filter(x=>match(x,botLast)===f);
-  botHist.innerHTML+=`<div><span>${botLast}</span> → ${f}</div>`;
-  if(f===4)return end("Bot menang! 🤖", false);
-  possible=filtered; document.getElementById('nextTurnBtn').style.display='inline-block';
-}
-function forgiveCheat(){ show('botTurn'); }
-function confirmSurrender(){ show('surrenderScreen'); }
-function cancelSurrender(){ show(playerSecret && botLast ? 'botTurn':'playerTurn'); }
-function giveUp(){ end("Kamu menyerah 😔", false); }
-function nextTurn(){ show('playerTurn'); document.getElementById('guessBtn').style.display='inline-block'; clearGuess(); g1.focus(); }
-function clearGuess(){ g1.value=g2.value=g3.value=g4.value=''; document.getElementById('result').textContent=''; }
-
-function end(msg,win){
-  const img=document.getElementById('endImg');
-  img.src=win?"IMG-20251016-WA0037.jpg":"motion_photo_7499955795629952970.jpg";
-  document.getElementById('endMsg').textContent=msg;
-  document.getElementById('endDetails').innerHTML=`<p>🔢 Angka kamu: <b>${playerSecret}</b><br>🤖 Angka bot: <b>${botSecret}</b></p>`;
-  const verse=document.getElementById('endVerse');
-  verse.innerHTML = win?"📖 <b>Roma 8:37</b> — 'Tetapi dalam semuanya itu kita lebih dari pada orang-orang yang menang, oleh Dia yang telah mengasihi kita.'":"📖 <b>Yeremia 29:11</b> — 'Sebab Aku ini mengetahui rancangan-rancangan apa yang ada pada-Ku mengenai kamu, demikianlah firman TUHAN, yaitu rancangan damai sejahtera dan bukan rancangan kecelakaan.'";
-  show('endScreen');
-}
-
-/* Riwayat */
-function showHistoryScreen(){
-  const list = document.getElementById('historyList');
-  if(playerHist.innerHTML==="" && botHist.innerHTML===""){ list.innerHTML = "<p>Belum ada permainan yang dimulai.</p>"; }
-  else { list.innerHTML = `<h3>${playerName || "Pemain"} vs Bot</h3><h4>Tebakan Pemain:</h4>${playerHist.innerHTML || "(belum ada)"}<h4>Tebakan Bot:</h4>${botHist.innerHTML || "(belum ada)"}`; }
-  show('historyScreen');
-}
-
-/* ===== Auto-pindah fokus saat input tebakan ===== */
-const guessInputs = [g1, g2, g3, g4];
-guessInputs.forEach((input, idx) => {
-  input.addEventListener('input', () => {
-    if(input.value.length === 1 && idx < guessInputs.length - 1) {
-      guessInputs[idx + 1].focus();
-    }
-  });
+/* ===== Vs Bot start (simple) ===== */
+$('btnVsBot').addEventListener('click',()=>{
+  const n = $('name').value.trim(); const sec=$('secret').value.trim();
+  if(!n){ alert('Nama tidak boleh kosong'); return; }
+  if(!isValidSecret(sec)){ alert('Angka rahasia harus 4 angka unik (1-9)'); return; }
+  localBotSecret = allComb[Math.floor(Math.random()*allComb.length)];
+  sessionStorage.setItem('localPlayerName', n);
+  sessionStorage.setItem('localPlayerSecret', sec);
+  $('playerNameDisplay').textContent = '👤 '+n;
+  $('playerHistory').innerHTML=''; $('opponentHistory').innerHTML='';
+  show('playerTurn'); guessInputs[0].focus();
 });
+
+$('guessBtn').addEventListener('click',()=>{
+  const g = guessInputs.map(i=>i.value).join('');
+  const onlineRoom = sessionStorage.getItem('onlineRoom');
+  if(onlineRoom){ // when online, use function that will be defined in module
+    if(window.submitGuessOnline){ window.submitGuessOnline(g); clearGuessInputs(); }
+    else alert('Fitur online belum siap (module belum dimuat)');
+    return;
+  }
+  if(!/^[1-9]{4}$/.test(g) || new Set(g).size!==4){ alert('Tebakan harus 4 angka unik (1-9)'); return; }
+  const res = match(g, localBotSecret);
+  $('result').textContent = `Hasil: ${res}`;
+  $('playerHistory').innerHTML += `<div><span>${g}</span> → ${res}</div>`;
+  if(res===4){ showEnd('Kamu menang! 🎉', true); return; }
+  // bot turn simple
+  setTimeout(()=>{
+    const botGuess = allComb[Math.floor(Math.random()*allComb.length)];
+    const botResult = match(botGuess, sessionStorage.getItem('localPlayerSecret'));
+    $('opponentHistory').innerHTML += `<div><span>${botGuess}</span> → ${botResult}</div>`;
+    if(botResult===4){ showEnd('Bot menang 🤖', false); return; }
+    show('playerTurn');
+  }, 800);
+});
+function clearGuessInputs(){ guessInputs.forEach(i=>i.value=''); guessInputs[0].focus(); $('result').textContent=''; }
+
+function showEnd(msg, win){ $('endMsg').textContent = msg; $('endDetails').innerHTML = win?'<p>Selamat!</p>':'<p>Coba lagi ya.</p>'; show('endScreen'); }
+
+/* ===== Firebase module (mabar) - loaded as module below ===== */
+// We'll keep placeholders; actual realtime interactions are in module script
+
 </script>
 
-<!-- ===== Firebase + Mabar Online (module) ===== -->
+<!-- ===== Firebase module (type=module) ===== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import { getDatabase, ref, set, get, update, onValue, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-  // Konfigurasi Firebase (dari kamu)
+  // Masukkan konfigurasi Firebase (pastikan databaseURL sesuai environment kamu)
   const firebaseConfig = {
     apiKey: "AIzaSyCqgr3gYyc4oFg69xphOWPctvzgCisyL-I",
     authDomain: "game-tebak-angka-2025.firebaseapp.com",
+    databaseURL: "https://game-tebak-angka-2025-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "game-tebak-angka-2025",
     storageBucket: "game-tebak-angka-2025.firebasestorage.app",
     messagingSenderId: "776244941517",
@@ -379,63 +254,57 @@ guessInputs.forEach((input, idx) => {
   const db = getDatabase(app);
   const auth = getAuth();
 
-  // login anonim otomatis
-  signInAnonymously(auth).catch(e => console.error("Anon sign-in failed:",e));
-  onAuthStateChanged(auth, user => {
-    if(user) console.log("Signed in anon:", user.uid);
-  });
+  // sign in anonymously so we can write/read DB
+  signInAnonymously(auth).catch(e=> console.warn('Anon sign-in failed', e));
+  onAuthStateChanged(auth, u=> { if(u) console.log('Signed in anon', u.uid); });
 
-  // helper buat kode room
-  function makeRoomCode(){ return Math.random().toString(36).substring(2,7).toUpperCase(); }
-  function setRoomCodeUI(code){ document.getElementById('roomCode').textContent = code; }
+  // simple helpers
+  const $ = id => document.getElementById(id);
+  function makeRoomCode(){ return Math.random().toString(36).replace(/[^A-Z0-9]/ig,'').substring(2,7).toUpperCase(); }
 
-  // expose for UI
-  window.generateRoomCode = function(){ setRoomCodeUI(makeRoomCode()); }
+  // expose generate function so inline UI can call it
+  window.generateRoomCode = function(){ const code=makeRoomCode(); $('roomCode').textContent = code; sessionStorage.setItem('roomCode', code); }
 
-  // goToOnlineSetup dipanggil dari UI: isHost boolean
-  window.goToOnlineSetup = function(isHost){
+  // show online setup screen when starting from UI
+  window.goToOnlineSetup = async function(isHost){
     let code;
-    if(isHost){
-      code = document.getElementById('roomCode').textContent;
-      if(code === "-----") return error("Buat kode room dulu!");
-    } else {
-      code = document.getElementById('joinCode').value.trim().toUpperCase();
-      if(code.length < 3) return error("Masukkan kode room yang benar!");
-    }
-    sessionStorage.setItem("roomCode", code);
-    sessionStorage.setItem("isHost", isHost ? "true" : "false");
-    showOnlineSetup();
-  }
+    if(isHost){ code = $('roomCode').textContent; if(!code || code==='—') { alert('Buat kode room dulu dengan Generate'); return; } }
+    else { code = $('joinCode').value.trim().toUpperCase(); if(!code) { alert('Masukkan kode room untuk bergabung'); return; } }
 
-  window.showOnlineSetup = function(){
-    // buat layar setup jika belum ada
-    if(!document.getElementById('onlineSetup')){
-      document.body.insertAdjacentHTML("beforeend", `
-        <div id="onlineSetup" class="screen active">
-          <h1>🔢 Siapkan Dirimu (Online)</h1>
-          <p>Room: <b id="onlineRoomDisplay">${sessionStorage.getItem('roomCode') || ''}</b></p>
-          <input id="onlineName" type="text" placeholder="Nama Pemain"><br>
-          <input id="onlineSecret" type="text" maxlength="4" placeholder="Angka Rahasia"><br>
-          <p id="status" style="font-size:14px;color:#5a2c2c;margin-top:8px;"></p>
-          <div class="btn-row">
-            <button onclick="startOnlineGame()">Mulai ▶️</button>
-            <button onclick="cancelOnlineSetup()">Batal</button>
-          </div>
+    // simpan tipe role sementara
+    sessionStorage.setItem('roomCode', code);
+    sessionStorage.setItem('isHost', isHost? 'true':'false');
+
+    // tampilkan modal setup sederhana (di dalam page)
+    const html = `
+      <div id="onlineSetupBox" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.2);width:320px;z-index:999;">
+        <h3>Siapkan Nama & Secret</h3>
+        <div>Room: <b id="onlineRoomDisplay">${code}</b></div>
+        <input id="onlineName" placeholder="Nama kamu" style="margin-top:8px;width:100%;padding:8px;border-radius:8px;border:1px solid #ffd6e8;">
+        <input id="onlineSecret" placeholder="Angka rahasiamu 4 digit" maxlength="4" style="margin-top:8px;width:100%;padding:8px;border-radius:8px;border:1px solid #ffd6e8;">
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
+          <button id="onlineCancel">Batal</button>
+          <button id="onlineStartBtn">Mulai</button>
         </div>
-      `);
-    } else {
-      document.getElementById('onlineRoomDisplay').textContent = sessionStorage.getItem('roomCode');
-      show('onlineSetup');
+      </div>`;
+    const wrapper = document.createElement('div'); wrapper.id='onlineSetupWrapper'; wrapper.innerHTML = html; document.body.appendChild(wrapper);
+
+    $('onlineCancel').onclick = ()=>{ document.getElementById('onlineSetupWrapper')?.remove(); }
+    $('onlineStartBtn').onclick = async ()=>{
+      const name = $('onlineName').value.trim(); const secret = $('onlineSecret').value.trim();
+      if(!name){ alert('Nama tidak boleh kosong'); return; }
+      if(!/^[1-9]{4}$/.test(secret) || new Set(secret).size!==4){ alert('Secret harus 4 angka unik 1-9'); return; }
+
+      try{
+        if(isHost){ await createRoomOnFirebase(code, name, secret); alert('Room dibuat: '+code+'\nTunggu pemain bergabung'); }
+        else { await joinRoomOnFirebase(code, name, secret); alert('Berhasil bergabung: '+code); }
+        sessionStorage.setItem('onlineRoom', code); sessionStorage.setItem('onlineName', name); sessionStorage.setItem('onlineSecret', secret);
+        document.getElementById('onlineSetupWrapper')?.remove();
+      } catch(err){ alert('Gagal: '+(err.message || err)); }
     }
   }
 
-  window.cancelOnlineSetup = function(){
-    show('onlineMenu');
-    const el = document.getElementById('onlineSetup');
-    if(el) el.remove();
-  }
-
-  // create room in DB
+  // Create room in DB
   async function createRoomOnFirebase(roomCode, playerName, secret){
     const roomRef = ref(db, 'rooms/' + roomCode);
     await set(roomRef, {
@@ -448,184 +317,88 @@ guessInputs.forEach((input, idx) => {
     listenRoom(roomCode);
   }
 
-  // join room
   async function joinRoomOnFirebase(roomCode, playerName, secret){
     const roomRef = ref(db, 'rooms/' + roomCode);
     const snap = await get(roomRef);
-    if(!snap.exists()) throw new Error("Room tidak ditemukan.");
+    if(!snap.exists()) throw new Error('Room tidak ditemukan');
     const data = snap.val();
-    if(data.guest) throw new Error("Room sudah penuh.");
-    await update(roomRef, {
-      guest: { uid: auth.currentUser.uid, name: playerName, secret: secret },
-      state: 'playing'
-    });
+    if(data.guest) throw new Error('Room sudah penuh');
+    await update(roomRef, { guest: { uid: auth.currentUser.uid, name: playerName, secret: secret }, state: 'playing' });
     listenRoom(roomCode);
   }
 
-  // listen room updates
+  // listen for room changes
   let roomUnsub = null;
   function listenRoom(roomCode){
     const rref = ref(db, 'rooms/' + roomCode);
-    if(roomUnsub) roomUnsub(); // not available directly; onValue returns function? We'll store callback anyway
-    // onValue returns unsubscribe function in v11? It returns function to detach. We'll store it.
-    const off = onValue(rref, (snap) => {
-      const room = snap.val();
-      roomUpdateHandler(room, roomCode);
-    });
-    roomUnsub = () => off();
+    if(roomUnsub) roomUnsub();
+    const off = onValue(rref, (snap)=>{ const room = snap.val(); onRoomUpdate(room, roomCode); });
+    roomUnsub = ()=> off();
   }
 
-  // startOnlineGame called after filling name & secret on online setup
-  window.startOnlineGame = async function(){
-    const name = document.getElementById('onlineName').value.trim();
-    const sec = document.getElementById('onlineSecret').value.trim();
-    const code = sessionStorage.getItem('roomCode');
-    const isHost = sessionStorage.getItem('isHost') === "true";
+  async function onRoomUpdate(room, code){
+    if(!room) { alert('Room telah dihapus'); return; }
+    const isHost = sessionStorage.getItem('isHost') === 'true';
+    const role = isHost ? 'host' : 'guest';
 
-    if(!name) return error("Nama tidak boleh kosong!");
-    if(!/^[1-9]{4}$/.test(sec) || new Set(sec).size!==4) return error("Angka rahasia harus 4 angka unik (1–9)!");
+    // update secret table (show _your_ secret only locally)
+    const tbl = $('playerSecretTable'); tbl.innerHTML=''; const mySecret = isHost ? room.host?.secret : room.guest?.secret; const secShow = mySecret || '????'; for(const ch of secShow) { const d=document.createElement('div'); d.textContent=ch; tbl.appendChild(d); }
 
-    try {
-      if(isHost){
-        await createRoomOnFirebase(code, name, sec);
-        alert("Room dibuat. Kode: " + code + "\nTunggu pemain lain bergabung.");
-      } else {
-        await joinRoomOnFirebase(code, name, sec);
-        alert("Berhasil bergabung ke Room: " + code);
-      }
-      // simpan info lokal
-      sessionStorage.setItem('onlineName', name);
-      sessionStorage.setItem('onlineSecret', sec);
-      sessionStorage.setItem('onlineRoom', code);
-      // show playerTurn (UI will be updated by listener)
-      // set playerNameDisplay
-      document.getElementById('playerNameDisplay').textContent = "👤 " + name;
-    } catch(e){
-      error(e.message || "Gagal membuat/bergabung room.");
-      return;
-    }
-  }
+    // update histories
+    $('playerHistory').innerHTML=''; $('opponentHistory').innerHTML='';
+    if(room.hostHistory) Object.values(room.hostHistory).forEach(it=> $('playerHistory').innerHTML += `<div><span>${it.guess}</span> → ${it.result}</div>`);
+    if(room.guestHistory) Object.values(room.guestHistory).forEach(it=> $('opponentHistory').innerHTML += `<div><span>${it.guess}</span> → ${it.result}</div>`);
 
-  // handle room updates
-  async function roomUpdateHandler(room, code){
-    if(!room) {
-      error("Room telah dibubarkan.");
-      return;
-    }
-    const isHost = sessionStorage.getItem('isHost') === "true";
-    const myRole = isHost ? 'host' : 'guest';
-    // Update histories UI
-    const ph = document.getElementById('playerHistory');
-    const bh = document.getElementById('botHistory');
-    if(ph && bh){
-      ph.innerHTML = "";
-      bh.innerHTML = "";
-      if(room.hostHistory) Object.values(room.hostHistory).forEach(it => ph.innerHTML += `<div><span>${it.guess}</span> → ${it.result}</div>`);
-      if(room.guestHistory) Object.values(room.guestHistory).forEach(it => bh.innerHTML += `<div><span>${it.guess}</span> → ${it.result}</div>`);
-    }
-
-    // state transitions
+    // change screens based on state
     if(room.state === 'waiting'){
-      // waiting for guest
-      document.getElementById('status')?.innerText = "Menunggu pemain bergabung...";
-      show('onlineSetup');
+      alert('Room dibuat, menunggu lawan. Kode: '+code);
+      show('opponentTurn'); $('opponentTitle').textContent = 'Menunggu pemain bergabung...';
     } else if(room.state === 'playing'){
-      // determine whose turn
-      const turnOwner = room.turn; // 'host' or 'guest'
-      const myName = sessionStorage.getItem('onlineName') || (isHost ? room.host?.name : room.guest?.name);
-      const oppName = isHost ? room.guest?.name : room.host?.name;
-
-      // update secret table - show my secret only
-      const tbl = document.getElementById('playerSecretTable');
-      if(tbl){
-        tbl.innerHTML = "";
-        // show my secret in table only if set
-        const mySecret = isHost ? room.host?.secret : room.guest?.secret;
-        const secretToShow = mySecret ? mySecret : "????";
-        for(let ch of secretToShow){ const cell=document.createElement('div'); cell.textContent=ch; tbl.appendChild(cell); }
-      }
-
-      // if it's my turn -> show playerTurn UI
-      if(turnOwner === myRole){
-        document.getElementById('playerTurnTitle').textContent = `Giliranmu — Tebak ${oppName || 'Lawan'}`;
-        show('playerTurn');
+      const turn = room.turn; const myName = isHost ? room.host?.name : room.guest?.name; const oppName = isHost ? room.guest?.name : room.host?.name;
+      if(turn === (isHost ? 'host' : 'guest')){
+        $('playerTurnTitle').textContent = `Giliranmu — Tebak ${oppName || 'Lawan'}`; show('playerTurn');
       } else {
-        // show waiting screen with opponent guess box
-        document.getElementById('botTurnTitle').textContent = `Giliran ${oppName || 'Lawan'}`;
-        document.getElementById('botGuess').textContent = "Menunggu...";
-        // feedbackArea used only for vs bot; for online we show waiting text
-        document.getElementById('feedbackArea').innerHTML = `<div style="padding:8px;">Tunggu sampai lawan mengirim tebakan...</div>`;
-        show('botTurn');
+        $('opponentTitle').textContent = `Giliran ${oppName || 'Lawan'}`; $('opponentGuess').textContent = 'Menunggu...'; show('opponentTurn');
       }
     } else if(room.state === 'ended'){
-      const winner = room.winner;
-      const winnerName = winner === 'host' ? room.host?.name : room.guest?.name;
-      endOnlineGame(`${winnerName} menang!`, room);
-      // cleanup optional
+      const winner = room.winner; const winnerName = winner === 'host' ? room.host?.name : room.guest?.name;
+      alert(`${winnerName} menang!`);
+      show('endScreen'); $('endMsg').textContent = winnerName + ' menang (Online)';
     }
   }
 
-  // submitGuessOnline API
+  // submit guess online
   window.submitGuessOnline = async function(guessStr){
-    const code = sessionStorage.getItem('onlineRoom') || sessionStorage.getItem('roomCode');
-    const isHost = sessionStorage.getItem('isHost') === "true";
-    const role = isHost ? 'host' : 'guest';
-    if(!isValid(guessStr)) return error("Tebakan harus 4 angka unik (1–9)!");
-    const roomSnap = await get(ref(db, 'rooms/' + code));
-    if(!roomSnap.exists()) return error("Room tidak ditemukan.");
-    const room = roomSnap.val();
-    const opponentSecret = (role === 'host') ? room.guest?.secret : room.host?.secret;
-    if(!opponentSecret) return error("Belum ada lawan atau lawan belum mengisi secret.");
-
-    // local match
-    function matchLocal(a,b){let c=0; for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c;}
-    const result = matchLocal(guessStr, opponentSecret);
-
-    // push history
-    const histPath = role === 'host' ? 'rooms/' + code + '/hostHistory' : 'rooms/' + code + '/guestHistory';
-    const newRef = push(ref(db, histPath));
-    await set(newRef, { guess: guessStr, result: result, ts: serverTimestamp() });
-
-    // if win
+    const code = sessionStorage.getItem('onlineRoom'); if(!code) return alert('Room tidak ada');
+    const isHost = sessionStorage.getItem('isHost') === 'true'; const role = isHost? 'host':'guest';
+    if(!/^[1-9]{4}$/.test(guessStr) || new Set(guessStr).size!==4) return alert('Tebakan harus 4 angka unik (1-9)');
+    const roomSnap = await get(ref(db, 'rooms/'+code)); if(!roomSnap.exists()) return alert('Room tidak ditemukan');
+    const room = roomSnap.val(); const opponentSecret = role==='host' ? room.guest?.secret : room.host?.secret; if(!opponentSecret) return alert('Lawan belum isi secret');
+    const result = match(guessStr, opponentSecret);
+    const histPath = role==='host' ? 'rooms/'+code+'/hostHistory' : 'rooms/'+code+'/guestHistory';
+    const newRef = push(ref(db, histPath)); await set(newRef, { guess: guessStr, result: result, ts: serverTimestamp() });
     const roomRef = ref(db, 'rooms/' + code);
-    if(result === 4){
-      await update(roomRef, { state: 'ended', winner: role });
-    } else {
-      // change turn
-      const next = role === 'host' ? 'guest' : 'host';
-      await update(roomRef, { turn: next });
-    }
+    if(result === 4){ await update(roomRef, { state: 'ended', winner: role }); }
+    else { const next = role==='host' ? 'guest' : 'host'; await update(roomRef, { turn: next }); }
   }
 
-  // override submitGuess to route to online when in onlineRoom
-  const origSubmitGuess = window.submitGuess;
-  window.submitGuess = function(){
-    const g = [g1.value,g2.value,g3.value,g4.value].join('');
+  // wire UI events to functions
+  document.getElementById('btnMakeStart').addEventListener('click', ()=> window.goToOnlineSetup(true));
+  document.getElementById('btnJoinStart').addEventListener('click', ()=> window.goToOnlineSetup(false));
+
+  // connect guess button to online function if online
+  document.getElementById('guessBtn').addEventListener('click', ()=>{
     const isOnline = sessionStorage.getItem('onlineRoom');
-    if(isOnline){
-      submitGuessOnline(g);
-      clearGuess();
-      return;
-    }
-    origSubmitGuess();
-  }
+    const g = [$('g1').value,$('g2').value,$('g3').value,$('g4').value].join('');
+    if(isOnline) { window.submitGuessOnline(g).catch(e=>alert('Error: '+e.message)); $('g1').value=$('g2').value=$('g3').value=$('g4').value=''; return; }
+  });
 
-  // end online game UI
-  function endOnlineGame(msg, room){
-    const isHost = sessionStorage.getItem('isHost') === "true";
-    const winnerIsHost = room && room.winner === 'host';
-    const win = (isHost && winnerIsHost) || (!isHost && !winnerIsHost);
-    end(msg + " (Online)", win);
-  }
-  window.endOnlineGame = endOnlineGame;
+  // small cleanup when leaving
+  window.addEventListener('beforeunload', ()=>{ const room = sessionStorage.getItem('onlineRoom'); if(room && confirm('Keluar akan membubarkan room?')){ remove(ref(db,'rooms/'+room)); } });
 
-  // optional cleanup
-  window.cleanupRoom = async function(roomCode){
-    try { await remove(ref(db, 'rooms/' + roomCode)); } catch(e){ console.warn(e); }
-  }
+  // debug helper
+  window._firebase={db,auth};
 
-  // expose some functions for debug
-  window._firebase = { db, auth };
 </script>
 
 </body>
