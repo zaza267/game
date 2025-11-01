@@ -4,241 +4,435 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Tebak 4 Angka — vs Bot & Mabar</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <style>
-/* ===== CSS utama (pink lembut) ===== */
 :root{
   --bg1:#ffe6f0; --bg2:#ffd7e5; --accent:#b30057; --card:#fff; --muted:#5a2c2c;
 }
+*{box-sizing:border-box;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
 body {
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(135deg, var(--bg1), var(--bg2));
-  display: flex; align-items: center; justify-content: center;
-  height: 100vh; margin: 0;
+  margin:0; min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg,var(--bg1),var(--bg2));
 }
-.screen { display: none; text-align: center; background: var(--card);
-  padding: 24px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  width: 380px; max-height: 90vh; overflow-y: auto; position: relative;
+.app {
+  width:380px; max-width:94%;
+  background:var(--card); border-radius:14px; padding:18px; position:relative;
+  box-shadow:0 10px 30px rgba(0,0,0,0.12);
 }
-.active { display: block; }
-h1 { color: var(--accent); font-size: 24px; margin-bottom: 12px; }
-input[type=text] { text-align: center; width: 80%; font-size: 20px; padding: 10px;
-  margin: 8px; border: 2px solid #ffcce0; border-radius: 10px;
+.header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.title { color:var(--accent); font-weight:700; font-size:18px; }
+.small { font-size:13px; color:var(--muted); }
+#statusMsg { font-size:13px; color:#7a2b4a; text-align:center; margin-bottom:8px; min-height:18px; }
+
+/* screens */
+.screen { display:none; }
+.screen.active { display:block; }
+
+/* inputs & buttons */
+input[type=text], input[type=tel] {
+  width:100%; padding:10px 12px; border-radius:10px; border:2px solid #ffd6e8; text-align:center;
+  font-size:16px; margin-top:8px;
 }
-button { background: #ff7aa2; color: white; border: none; border-radius: 8px;
-  padding: 10px 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  transition: 0.2s;
-}
-button:hover { background: #ff5d8a; transform: scale(1.03); }
+.button-row { display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+button { background:#ff7aa2; color:#fff; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600; }
+button.ghost { background:transparent; color:var(--accent); border:1px solid #ffd6e8; }
+button.small { padding:6px 10px; font-size:14px; border-radius:8px; }
 
-.num-btn { width: 50px; height: 50px; border-radius: 8px;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-weight: 700; border: 1px solid #eee; cursor: pointer;
-  margin: 6px; background: #fff0f5; color: var(--accent); transition: all .2s; }
-.num-btn:hover { background: #ffd6e8; transform: scale(1.05); }
+/* secret table + guess grid */
+.table-secret { display:flex; justify-content:center; gap:8px; margin:8px 0 14px; }
+.table-secret div { background:#d2b48c;color:#fff;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:700; }
+.guess-grid { display:flex; gap:8px; justify-content:center; margin-top:12px; }
+.guess-grid input { width:56px;height:56px;border-radius:10px;font-size:20px;text-align:center;border:2px solid #ffb6c1; }
 
-.table-secret { display: flex; justify-content: center; gap: 8px; margin: 10px 0 20px; }
-.table-secret div { background: #d2b48c; color: white; width: 40px; height: 40px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; border-radius: 6px; font-weight: 700; }
+/* bot box */
+.bot-box { background: linear-gradient(135deg,#ffccd5,#d2b48c); color:#5a2c2c; border-radius:10px; padding:12px; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; margin:12px auto; width:180px; }
 
-.bot-box { background: linear-gradient(135deg, #ffccd5, #d2b48c);
-  color: #5a2c2c; border-radius: 10px; padding: 20px;
-  font-size: 26px; font-weight: 800; width: 160px; margin: 12px auto; }
+/* history */
+.history { background:#fff6f9;border-radius:10px;padding:10px;margin-top:10px; max-height:160px; overflow:auto; font-size:14px; color:var(--muted); }
 
-.history { background: #fff6f9; border-radius: 10px; padding: 10px; margin-top: 12px;
-  text-align: left; max-height: 180px; overflow-y: auto; font-size: 14px; line-height: 1.6; }
-.history span { color: var(--accent); font-weight: 600; }
-.rules { text-align: left; background: #fff0f5; border-radius: 10px;
-  padding: 12px 16px; margin-top: 14px; font-size: 14px; color: var(--muted); }
+/* feedback buttons */
+.feedback-row { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+.feedback-row button { width:44px; height:44px; border-radius:8px; font-weight:800; font-size:16px; }
 
-.guess-grid { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
-.guess-grid input { width: 50px; height: 50px; border-radius: 10px;
-  font-size: 22px; font-weight: bold; border: 2px solid #ffb6c1;
-  color: var(--accent); text-align: center; }
+/* modals */
+.modal-overlay { position:fixed; left:0;top:0;right:0;bottom:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:999; }
+.modal { background:#fff; padding:14px; border-radius:12px; width:320px; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
 
-#playerNameDisplay { position: absolute; top: 12px; left: 12px; color: var(--accent); font-weight: 700; font-size: 14px; }
-.surrender-btn { position: absolute; top: 10px; right: 14px;
-  background: #ff5d8a; color: white; border-radius: 8px; padding: 6px 10px;
-  font-size: 12px; cursor: pointer; }
+/* surrender screen */
+.surrender-img { width:120px; height:120px; border-radius:50%; object-fit:cover; display:block; margin:10px auto; border:4px solid #ff7aa2; }
+
+/* top controls (dark mode/music) */
+.top-controls { position:absolute; left:12px; top:12px; display:flex; gap:8px; }
+.switch { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); }
+.switch input { margin-right:6px; }
 
 /* small responsive */
-@media (max-width:420px){
-  .screen{ width:92%; }
-}
+@media (max-width:420px){ .app{padding:12px;} .guess-grid input{width:48px;height:48px;} .table-secret div{width:36px;height:36px;} }
 </style>
 </head>
 <body>
+<div class="app" role="application">
 
-<!-- Top info -->
-<div id="playerNameDisplay"></div>
-
-<!-- WELCOME -->
-<div id="welcome" class="screen active">
-  <h1>🎮 Tebak 4 Angka — Main Sendiri / Mabar</h1>
-  <p>Masukkan namamu dan angka rahasiamu (1–9, 4 angka unik)</p>
-  <input id="name" type="text" placeholder="Nama Pemain"><br>
-  <input id="secret" type="text" maxlength="4" placeholder="Angka Rahasiamu"><br>
-  <div style="margin-top:8px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-    <button id="btnHistory">📜 Riwayat</button>
-    <button id="btnVsBot">🎯 Vs Bot</button>
-    <button id="btnMabar">🌐 Mabar (Online)</button>
-  </div>
-  <div class="rules">
-    <h3>Petunjuk singkat</h3>
-    <ul>
-      <li>Gunakan angka <b>1–9</b>, tidak boleh 0 dan tidak boleh angka berulang.</li>
-      <li>Jika tebakan menghasilkan <b>4</b> angka posisi tepat, maka MENANG.</li>
-    </ul>
-  </div>
-</div>
-
-<!-- ONLINE MENU -->
-<div id="onlineMenu" class="screen">
-  <h1>🌐 Mabar — Buat / Gabung Room</h1>
-  <div class="rules">
-    <p>Pilih buat room atau gabung ke room teman. Kode room sederhana 5 karakter.</p>
+  <div class="top-controls">
+    <label class="switch"><input id="darkToggle" type="checkbox">Dark</label>
+    <label class="switch"><input id="musicToggle" type="checkbox">Music</label>
   </div>
 
-  <div style="background:#fff6f9;padding:14px;border-radius:10px;margin-top:10px;">
-    <h3>👑 Make Room</h3>
-    <div>Kode Room kamu:</div>
-    <div id="roomCode" style="font-size:20px;font-weight:700;color:var(--accent);margin:8px 0;">—</div>
-    <div style="display:flex;gap:8px;justify-content:center;">
-      <button id="btnGen">🔑 Generate</button>
-      <button id="btnMakeStart">Start</button>
+  <div class="header">
+    <div>
+      <div class="title">🎮 Tebak 4 Angka — vs Bot & Mabar</div>
+      <div class="small">Main sendirian atau undang teman</div>
+    </div>
+    <div id="playerNameDisplay" class="small"></div>
+  </div>
+
+  <div id="statusMsg"></div>
+
+  <!-- WELCOME -->
+  <div id="welcome" class="screen active">
+    <div>
+      <div class="small">Nama</div>
+      <input id="name" type="text" placeholder="Nama Pemain">
+      <div class="small">Angka rahasiamu (4 digit unik 1-9)</div>
+      <input id="secret" type="text" maxlength="4" placeholder="e.g. 1234">
+      <div class="button-row">
+        <button id="btnVsBot">🎯 Vs Bot</button>
+        <button id="btnMabar" class="ghost">🌐 Mabar (Online)</button>
+        <button id="btnHistory" class="ghost">📜 Riwayat</button>
+      </div>
     </div>
   </div>
 
-  <div style="background:#fff6f9;padding:14px;border-radius:10px;margin-top:12px;">
-    <h3>🤝 Join Room</h3>
-    <input id="joinCode" maxlength="6" placeholder="Masukkan kode room"><br>
-    <div style="margin-top:8px;"><button id="btnJoinStart">Start</button></div>
+  <!-- ONLINE MENU -->
+  <div id="onlineMenu" class="screen">
+    <h3 style="color:var(--accent);margin:0 0 6px;">🌐 Mabar — Buat / Gabung Room</h3>
+    <div style="background:#fff6f9;padding:12px;border-radius:10px;">
+      <div style="font-weight:700">Kode Room kamu</div>
+      <div style="margin:8px 0;">
+        <!-- BIG CODE DISPLAY -->
+        <input id="roomCode" type="text" readonly style="font-size:20px;font-weight:700;text-align:center; letter-spacing:4px; background:#fff;border:2px solid #ffd6e8;padding:10px;border-radius:10px;">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button id="btnGen" class="small">🔑 Generate</button>
+        <button id="btnMakeStart" class="small ghost">Start (Host)</button>
+      </div>
+    </div>
+
+    <div style="background:#fff6f9;padding:12px;border-radius:10px;margin-top:12px;">
+      <div style="font-weight:700">Join Room</div>
+      <input id="joinCode" type="text" maxlength="6" placeholder="Masukkan kode room" style="font-size:16px;padding:10px;border-radius:10px;border:2px solid #ffd6e8;margin-top:8px;">
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+        <button id="btnJoinStart" class="small">Start (Join)</button>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:center;margin-top:12px;">
+      <button id="btnBackFromOnline" class="ghost small">⬅️ Kembali</button>
+    </div>
   </div>
 
-  <div style="margin-top:12px;"><button id="btnBackFromOnline">⬅️ Kembali</button></div>
-</div>
+  <!-- PLAYER TURN -->
+  <div id="playerTurn" class="screen">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div id="playerTurnTitle" style="font-weight:700;color:var(--accent);">Giliranmu — Tebak Angka</div>
+      <div><button id="btnSurrender" class="small ghost">🏳️ Menyerah</button></div>
+    </div>
 
-<!-- PLAYER TURN (used for vs bot & online when it's your turn) -->
-<div id="playerTurn" class="screen">
-  <div class="surrender-btn" id="btnSurrender">🏳️ Menyerah</div>
-  <h1 id="playerTurnTitle">Giliranmu — Tebak Angka</h1>
-  <div class="guess-grid">
-    <input id="g1" maxlength="1" inputmode="numeric">
-    <input id="g2" maxlength="1" inputmode="numeric">
-    <input id="g3" maxlength="1" inputmode="numeric">
-    <input id="g4" maxlength="1" inputmode="numeric">
+    <div class="guess-grid" style="margin-top:12px;">
+      <input id="g1" maxlength="1" inputmode="numeric" pattern="[1-9]">
+      <input id="g2" maxlength="1" inputmode="numeric" pattern="[1-9]">
+      <input id="g3" maxlength="1" inputmode="numeric" pattern="[1-9]">
+      <input id="g4" maxlength="1" inputmode="numeric" pattern="[1-9]">
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
+      <button id="guessBtn">Kirim Tebakan</button>
+      <button id="clearBtn" class="ghost small">Bersihkan</button>
+    </div>
+
+    <div id="result" style="text-align:center;margin-top:10px;font-weight:700;"></div>
+
+    <h4 style="margin-top:12px;">Riwayat Tebakan</h4>
+    <div class="history" id="playerHistory"></div>
   </div>
-  <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
-    <button id="guessBtn">Kirim Tebakan</button>
-    <button id="clearBtn">Bersihkan</button>
+
+  <!-- OPPONENT TURN / FEEDBACK -->
+  <div id="opponentTurn" class="screen">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div id="opponentTitle" style="font-weight:700;color:var(--accent);">Giliran Lawan</div>
+      <div><button id="btnSurrender2" class="small ghost">🏳️ Menyerah</button></div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <div style="font-weight:700">Angka rahasiamu</div>
+      <div id="playerSecretTable" class="table-secret"></div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <div style="font-weight:700">Tebakan lawan</div>
+      <div class="bot-box" id="opponentGuess">Menunggu...</div>
+      <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:6px;">Pilih feedback (0–4) sesuai posisi yang benar</div>
+
+      <div class="feedback-row" id="feedbackRow" style="margin-top:8px;">
+        <button class="small" data-v="0">0</button>
+        <button class="small" data-v="1">1</button>
+        <button class="small" data-v="2">2</button>
+        <button class="small" data-v="3">3</button>
+        <button class="small" data-v="4">4</button>
+      </div>
+
+      <div style="margin-top:12px;">
+        <h4>Riwayat Tebakan Lawan</h4>
+        <div class="history" id="opponentHistory"></div>
+      </div>
+    </div>
   </div>
-  <p id="result"></p>
-  <h3>Riwayat Tebakan:</h3>
-  <div class="history" id="playerHistory"></div>
-  <div style="margin-top:8px;"><button id="btnBackToMenu">🏠 Menu</button></div>
+
+  <!-- END SCREEN -->
+  <div id="endScreen" class="screen">
+    <h3 id="endMsg"></h3>
+    <div id="endDetails" style="margin-top:8px;"></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;">
+      <button id="btnPlayAgain">Main Lagi</button>
+    </div>
+  </div>
+
 </div>
 
-<!-- WAIT / OPPONENT TURN -->
-<div id="opponentTurn" class="screen">
-  <div class="surrender-btn" id="btnSurrender2">🏳️ Menyerah</div>
-  <h1 id="opponentTitle">Giliran Lawan</h1>
-  <p>Angka rahasiamu:</p>
-  <div id="playerSecretTable" class="table-secret"></div>
-  <div class="bot-box" id="opponentGuess">Menunggu...</div>
-  <div style="margin-top:8px;">Tunggu lawan mengirim tebakan...</div>
-  <h3>Riwayat Tebakan Lawan:</h3>
-  <div class="history" id="opponentHistory"></div>
-  <div style="margin-top:8px;"><button id="btnBackToMenu2">🏠 Menu</button></div>
-</div>
+<!-- AUDIO -->
+<audio id="bgMusic" loop src="Kasih Putih (Acoustic).mp3"></audio>
 
-<!-- END SCREEN -->
-<div id="endScreen" class="screen">
-  <h1 id="endMsg"></h1>
-  <div id="endDetails"></div>
-  <div style="margin-top:12px;"><button id="btnPlayAgain">Main Lagi</button></div>
-</div>
+<!-- SURRENDER / CHEAT MODALS (created dynamically) -->
 
 <script>
-/* ===== small DOM helper & game utils ===== */
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);if(el)el.classList.add('active');}
-function $(id){return document.getElementById(id);} 
-function isValidSecret(s){return /^[1-9]{4}$/.test(s) && new Set(s).size===4}
-function match(a,b){let c=0;for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c}
+/* -------------------------
+   Utility + UI helpers
+   ------------------------- */
+const $ = id => document.getElementById(id);
+function show(screenId){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = $(screenId); if(el) el.classList.add('active');
+  // clear status on screen change
+  setStatus('');
+}
+function setStatus(msg, timeout=2500){
+  $('statusMsg').textContent = msg || '';
+  if(timeout && msg) {
+    clearTimeout(window._statusTimeout);
+    window._statusTimeout = setTimeout(()=>{ if($('statusMsg')) $('statusMsg').textContent=''; }, timeout);
+  }
+}
 
-/* ===== local vs-bot logic (kept simple) ===== */
-const allComb=[]; (function(){const d='123456789'.split(''); function back(c){ if(c.length===4){ allComb.push(c.join('')); return } for(const x of d) if(!c.includes(x)){ c.push(x); back(c); c.pop(); } } back([]);})();
-let localBotSecret='';
+/* simple modal creation for confirm */
+function showConfirm(title, message, yesCb, noCb){
+  const overlay = document.createElement('div'); overlay.className='modal-overlay';
+  overlay.innerHTML = `<div class="modal"><h3 style="margin:0 0 8px;">${title}</h3><div style="margin-bottom:12px;">${message}</div><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="modNo" class="ghost small">Tidak</button><button id="modYes">Iya</button></div></div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#modYes').onclick = ()=>{ yesCb(); overlay.remove(); };
+  overlay.querySelector('#modNo').onclick = ()=>{ noCb&&noCb(); overlay.remove(); };
+}
 
-/* Auto-focus inputs */
+/* modal info (cheat / surrender) */
+function showInfoModal(htmlContent, okText='OK', okCb){
+  const overlay = document.createElement('div'); overlay.className='modal-overlay';
+  overlay.innerHTML = `<div class="modal">${htmlContent}<div style="display:flex;justify-content:flex-end;margin-top:10px;"><button id="infoOk">${okText}</button></div></div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#infoOk').onclick = ()=>{ okCb && okCb(); overlay.remove(); };
+}
+
+/* -------------------------
+   Auto-focus for guess inputs
+   ------------------------- */
 const guessInputs = ['g1','g2','g3','g4'].map(id=>$(id));
-guessInputs.forEach((inp,idx)=>{ inp.addEventListener('input',()=>{ if(inp.value.length===1 && idx<guessInputs.length-1) guessInputs[idx+1].focus(); }); });
+guessInputs.forEach((inp,idx)=>{
+  inp.addEventListener('input',()=>{
+    if(inp.value.length===1 && idx < guessInputs.length-1) guessInputs[idx+1].focus();
+  });
+});
 
-/* ===== UI wiring ===== */
-$('btnVsBot').addEventListener('click',()=>{show('welcome'); alert('Isi nama + secret di form utama lalu tekan Start Vs Bot pada welcome jika ingin lawan bot.\nUntuk mabar, pilih Mabar.');});
-$('btnMabar').addEventListener('click',()=> show('onlineMenu'));
-$('btnBackFromOnline').addEventListener('click',()=> show('welcome'));
-$('btnBackToMenu').addEventListener('click',()=> show('welcome'));
-$('btnBackToMenu2').addEventListener('click',()=> show('welcome'));
-$('btnHistory').addEventListener('click',()=>{ show('welcome'); alert('Riwayat sederhana ada di panel permainan nanti.'); });
-$('btnPlayAgain').addEventListener('click',()=> location.reload());
-$('clearBtn').addEventListener('click',()=>{ guessInputs.forEach(i=>i.value=''); guessInputs[0].focus(); $('result').textContent=''; });
+/* -------------------------
+   Theme & music toggles
+   ------------------------- */
+$('darkToggle').addEventListener('change', (e)=>{
+  document.documentElement.style.background = e.target.checked ? 'linear-gradient(135deg,#2b002b,#4a004a)' : '';
+  if(e.target.checked){
+    document.querySelectorAll('.app, .screen').forEach(el=>el.style.background = '#3a003a');
+  } else {
+    document.querySelectorAll('.app, .screen').forEach(el=>el.style.background = '');
+  }
+});
+$('musicToggle').addEventListener('change', (e)=>{
+  const audio = $('bgMusic');
+  if(e.target.checked) audio.play().catch(()=>{}); else audio.pause();
+});
 
-/* ===== Generate / UI helper for room code ===== */
-function makeRoomCode(){ return Math.random().toString(36).replace(/[^A-Z0-9]/ig,'').substring(2,7).toUpperCase(); }
-window.generateRoomCode = function(){ const code=makeRoomCode(); $('roomCode').textContent=code; sessionStorage.setItem('roomCodeTemp',code); }
-$('btnGen').addEventListener('click',()=> window.generateRoomCode());
-
-/* ===== Vs Bot start (simple) ===== */
-$('btnVsBot').addEventListener('click',()=>{
-  const n = $('name').value.trim(); const sec=$('secret').value.trim();
-  if(!n){ alert('Nama tidak boleh kosong'); return; }
-  if(!isValidSecret(sec)){ alert('Angka rahasia harus 4 angka unik (1-9)'); return; }
-  localBotSecret = allComb[Math.floor(Math.random()*allComb.length)];
+/* -------------------------
+   Local vs-bot logic
+   ------------------------- */
+const allComb = (()=>{
+  const out=[]; const d='123456789'.split('');
+  function back(cur){
+    if(cur.length===4){ out.push(cur.join('')); return; }
+    for(const x of d) if(!cur.includes(x)){ cur.push(x); back(cur); cur.pop(); }
+  }
+  back([]); return out;
+})();
+let localBotSecret = '';
+function startVsBot(){
+  const n = $('name').value.trim(); const sec = $('secret').value.trim();
+  if(!n){ setStatus('Nama tidak boleh kosong'); return; }
+  if(!/^[1-9]{4}$/.test(sec) || new Set(sec).size!==4){ setStatus('Secret harus 4 angka unik (1-9)'); return; }
   sessionStorage.setItem('localPlayerName', n);
   sessionStorage.setItem('localPlayerSecret', sec);
+  localBotSecret = allComb[Math.floor(Math.random()*allComb.length)];
   $('playerNameDisplay').textContent = '👤 '+n;
   $('playerHistory').innerHTML=''; $('opponentHistory').innerHTML='';
   show('playerTurn'); guessInputs[0].focus();
-});
+}
 
-$('guessBtn').addEventListener('click',()=>{
+/* handle guess vs bot */
+$('guessBtn').addEventListener('click', ()=>{
   const g = guessInputs.map(i=>i.value).join('');
-  const onlineRoom = sessionStorage.getItem('onlineRoom');
-  if(onlineRoom){ // when online, use function that will be defined in module
-    if(window.submitGuessOnline){ window.submitGuessOnline(g); clearGuessInputs(); }
-    else alert('Fitur online belum siap (module belum dimuat)');
+  if(sessionStorage.getItem('onlineRoom')) {
+    // Online path will be handled in module - do nothing here (module wires it)
+    const submitOnline = window.submitGuessOnline;
+    if(submitOnline){
+      submitOnline(g).catch(e=> setStatus('Error kirim: '+(e.message||e)));
+      guessInputs.forEach(i=>i.value=''); guessInputs[0].focus();
+    } else {
+      setStatus('Fitur online belum siap.');
+    }
     return;
   }
-  if(!/^[1-9]{4}$/.test(g) || new Set(g).size!==4){ alert('Tebakan harus 4 angka unik (1-9)'); return; }
+
+  if(!/^[1-9]{4}$/.test(g) || new Set(g).size!==4){ setStatus('Tebakan harus 4 angka unik (1-9)'); return; }
   const res = match(g, localBotSecret);
   $('result').textContent = `Hasil: ${res}`;
-  $('playerHistory').innerHTML += `<div><span>${g}</span> → ${res}</div>`;
-  if(res===4){ showEnd('Kamu menang! 🎉', true); return; }
-  // bot turn simple
+  $('playerHistory').innerHTML += `<div><span style="font-weight:700">${g}</span> → ${res}</div>`;
+  if(res===4){ showEnd('Kamu menang! 🎉'); return; }
+
+  // BOT TURN -> show opponentTurn and feedback buttons for user (user must feedback honestly)
   setTimeout(()=>{
     const botGuess = allComb[Math.floor(Math.random()*allComb.length)];
-    const botResult = match(botGuess, sessionStorage.getItem('localPlayerSecret'));
-    $('opponentHistory').innerHTML += `<div><span>${botGuess}</span> → ${botResult}</div>`;
-    if(botResult===4){ showEnd('Bot menang 🤖', false); return; }
-    show('playerTurn');
-  }, 800);
+    // set pending bot guess into the UI
+    $('opponentGuess').textContent = botGuess;
+    // store pending guess locally for feedback check
+    window._pendingLocalBotGuess = botGuess;
+    show('opponentTurn');
+  }, 600);
 });
-function clearGuessInputs(){ guessInputs.forEach(i=>i.value=''); guessInputs[0].focus(); $('result').textContent=''; }
 
-function showEnd(msg, win){ $('endMsg').textContent = msg; $('endDetails').innerHTML = win?'<p>Selamat!</p>':'<p>Coba lagi ya.</p>'; show('endScreen'); }
+/* feedback row (for opponentTurn) */
+document.querySelectorAll('.feedback-row button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const v = Number(btn.getAttribute('data-v'));
+    // if local bot pending
+    const pending = window._pendingLocalBotGuess;
+    if(pending){
+      const real = match(pending, sessionStorage.getItem('localPlayerSecret'));
+      if(v !== real){
+        // liar => show cheat modal
+        showCheat('feedback');
+        return;
+      }
+      // honest: accept, update history, check win
+      $('opponentHistory').innerHTML += `<div><span style="font-weight:700">${pending}</span> → ${v}</div>`;
+      if(v===4){ showEnd('Bot menang 🤖'); return; }
+      // continue: back to player turn
+      window._pendingLocalBotGuess = null;
+      show('playerTurn');
+      setStatus('Giliranmu');
+    } else {
+      // online pending (room.pendingGuess handled by module)
+      if(window.handleLocalFeedbackForPending) {
+        window.handleLocalFeedbackForPending(v).catch(e=> setStatus('Error feedback: '+(e.message||e)));
+      } else {
+        setStatus('Tidak ada tebakan untuk di-feedback.');
+      }
+    }
+  });
+});
 
-/* ===== Firebase module (mabar) - loaded as module below ===== */
-// We'll keep placeholders; actual realtime interactions are in module script
+/* clear guess inputs helper */
+$('clearBtn').addEventListener('click', ()=>{ guessInputs.forEach(i=>i.value=''); guessInputs[0].focus(); $('result').textContent=''; });
 
+/* play again */
+$('btnPlayAgain').addEventListener('click', ()=> location.reload());
+
+/* surrender button behavior (confirm modal -> show surrender screen with verse -> reload) */
+function handleSurrender(){
+  showConfirm('Menyerah?', 'Yakin ingin menyerah? Kamu akan dinyatakan kalah.', ()=>{
+    // on confirm -> show surrender info and reload after short moment
+    const html = `<div style="text-align:center;">
+      <img class="surrender-img" src="IMG-20251016-WA0019.jpg" alt="Menyerah">
+      <h3>😢 Kamu menyerah</h3>
+      <div style="margin-top:8px;font-weight:600;">Filipi 4:13 — "Segala perkara dapat kutanggung..."</div>
+      <div style="margin-top:8px;">Halaman akan dimuat ulang sekarang...</div>
+    </div>`;
+    showInfoModal(html, 'Oke', ()=>{
+      // reload immediately (user asked reload)
+      location.reload();
+    });
+  }, ()=> {
+    // cancel -> nothing, back to current screen; keep playing
+    setStatus('Lanjut bermain');
+  });
+}
+$('btnSurrender').addEventListener('click', handleSurrender);
+$('btnSurrender2').addEventListener('click', handleSurrender);
+
+/* cheat modal when lying */
+function showCheat(from){
+  const html = `<div style="text-align:center;">
+    <img class="surrender-img" src="IMG-20251006-WA0031.jpg" alt="Jangan Curang">
+    <h3>🚫 Dilarang Berbohong!</h3>
+    <div style="margin-top:8px;">Amsal 12:22 — "Bibir dusta adalah kekejian bagi TUHAN..."</div>
+    <div style="margin-top:10px;">Silakan tekan "Saya Bertobat" untuk melanjutkan.</div>
+  </div>`;
+  showInfoModal(html, 'Saya Bertobat', ()=>{
+    // continue game: if was feedback situation (local bot), return to opponentTurn to allow honest feedback
+    if(from === 'feedback'){
+      // clear pending if any or keep
+      // return to opponentTurn so user can give honest feedback
+      setStatus('Silakan beri feedback yang jujur');
+      show('opponentTurn');
+    } else {
+      setStatus('Dilanjutkan');
+    }
+  });
+}
+
+/* show end */
+function showEnd(msg){
+  $('endMsg').textContent = msg;
+  show('endScreen');
+}
+
+/* wire welcome buttons */
+$('btnVsBot').addEventListener('click', ()=> startVsBot());
+$('btnMabar').addEventListener('click', ()=> { show('onlineMenu'); setStatus('Mode online — buat/gabung room'); });
+$('btnBackFromOnline').addEventListener('click', ()=> show('welcome'));
+
+/* enlarge join input focus & UX */
+$('joinCode').style.letterSpacing = '6px';
+$('roomCode').style.letterSpacing = '6px';
+
+/* -------------------------
+   Firebase (module-like) below
+   - Uses pendingGuess pattern:
+     - submitGuessOnline writes room.pendingGuess = { by: role, guess }
+     - the other client sees pendingGuess and must press feedback (0..4)
+     - on honest feedback the receiver writes history entry and clears pendingGuess and changes turn
+   ------------------------- */
 </script>
 
-<!-- ===== Firebase module (type=module) ===== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import { getDatabase, ref, set, get, update, onValue, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-  // Masukkan konfigurasi Firebase (pastikan databaseURL sesuai environment kamu)
+  // --- PENTING: ganti databaseURL jika beda di projectmu ---
   const firebaseConfig = {
     apiKey: "AIzaSyCqgr3gYyc4oFg69xphOWPctvzgCisyL-I",
     authDomain: "game-tebak-angka-2025.firebaseapp.com",
@@ -254,57 +448,74 @@ function showEnd(msg, win){ $('endMsg').textContent = msg; $('endDetails').inner
   const db = getDatabase(app);
   const auth = getAuth();
 
-  // sign in anonymously so we can write/read DB
-  signInAnonymously(auth).catch(e=> console.warn('Anon sign-in failed', e));
-  onAuthStateChanged(auth, u=> { if(u) console.log('Signed in anon', u.uid); });
+  // sign-in anonymous
+  signInAnonymously(auth).catch(e => console.warn('Anon sign-in failed', e));
+  onAuthStateChanged(auth, u => { if(u) console.log('anon uid:', u.uid); });
 
-  // simple helpers
+  // helpers
   const $ = id => document.getElementById(id);
   function makeRoomCode(){ return Math.random().toString(36).replace(/[^A-Z0-9]/ig,'').substring(2,7).toUpperCase(); }
 
-  // expose generate function so inline UI can call it
-  window.generateRoomCode = function(){ const code=makeRoomCode(); $('roomCode').textContent = code; sessionStorage.setItem('roomCode', code); }
+  // generate room code (UI)
+  $('btnGen').addEventListener('click', ()=> {
+    const c = makeRoomCode();
+    $('roomCode').value = c;
+    sessionStorage.setItem('roomCode', c);
+    setStatus('Kode room dibuat: ' + c);
+  });
 
-  // show online setup screen when starting from UI
+  // goToOnlineSetup (open modal) for host/join
   window.goToOnlineSetup = async function(isHost){
-    let code;
-    if(isHost){ code = $('roomCode').textContent; if(!code || code==='—') { alert('Buat kode room dulu dengan Generate'); return; } }
-    else { code = $('joinCode').value.trim().toUpperCase(); if(!code) { alert('Masukkan kode room untuk bergabung'); return; } }
-
-    // simpan tipe role sementara
-    sessionStorage.setItem('roomCode', code);
-    sessionStorage.setItem('isHost', isHost? 'true':'false');
-
-    // tampilkan modal setup sederhana (di dalam page)
-    const html = `
-      <div id="onlineSetupBox" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.2);width:320px;z-index:999;">
-        <h3>Siapkan Nama & Secret</h3>
-        <div>Room: <b id="onlineRoomDisplay">${code}</b></div>
-        <input id="onlineName" placeholder="Nama kamu" style="margin-top:8px;width:100%;padding:8px;border-radius:8px;border:1px solid #ffd6e8;">
-        <input id="onlineSecret" placeholder="Angka rahasiamu 4 digit" maxlength="4" style="margin-top:8px;width:100%;padding:8px;border-radius:8px;border:1px solid #ffd6e8;">
+    let code = sessionStorage.getItem('roomCode') || '';
+    if(!isHost){
+      const j = $('joinCode').value.trim().toUpperCase();
+      if(!j){ setStatus('Masukkan kode room untuk bergabung'); return; }
+      code = j;
+    } else {
+      if(!code || code === '') { setStatus('Buat kode room terlebih dahulu'); return; }
+    }
+    // build modal
+    const wrapper = document.createElement('div');
+    wrapper.id = 'onlineSetupWrapper';
+    wrapper.style = 'position:fixed;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:999;';
+    wrapper.innerHTML = `
+      <div style="background:#fff;padding:14px;border-radius:12px;width:320px;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+        <h3 style="margin:0 0 8px;">Siapkan (Online)</h3>
+        <div>Room: <b>${code}</b></div>
+        <input id="onlineName" placeholder="Nama kamu" style="margin-top:8px;padding:8px;width:100%;border-radius:8px;border:2px solid #ffd6e8;">
+        <input id="onlineSecret" placeholder="Angka rahasiamu 4 digit" maxlength="4" style="margin-top:8px;padding:8px;width:100%;border-radius:8px;border:2px solid #ffd6e8;">
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
-          <button id="onlineCancel">Batal</button>
+          <button id="onlineCancel" class="ghost small">Batal</button>
           <button id="onlineStartBtn">Mulai</button>
         </div>
       </div>`;
-    const wrapper = document.createElement('div'); wrapper.id='onlineSetupWrapper'; wrapper.innerHTML = html; document.body.appendChild(wrapper);
+    document.body.appendChild(wrapper);
 
-    $('onlineCancel').onclick = ()=>{ document.getElementById('onlineSetupWrapper')?.remove(); }
-    $('onlineStartBtn').onclick = async ()=>{
-      const name = $('onlineName').value.trim(); const secret = $('onlineSecret').value.trim();
-      if(!name){ alert('Nama tidak boleh kosong'); return; }
-      if(!/^[1-9]{4}$/.test(secret) || new Set(secret).size!==4){ alert('Secret harus 4 angka unik 1-9'); return; }
-
+    wrapper.querySelector('#onlineCancel').onclick = ()=> wrapper.remove();
+    wrapper.querySelector('#onlineStartBtn').onclick = async ()=>{
+      const name = wrapper.querySelector('#onlineName').value.trim();
+      const secret = wrapper.querySelector('#onlineSecret').value.trim();
+      if(!name){ setStatus('Nama tidak boleh kosong'); return; }
+      if(!/^[1-9]{4}$/.test(secret) || new Set(secret).size!==4){ setStatus('Secret harus 4 angka unik 1-9'); return; }
+      sessionStorage.setItem('onlineRoom', code);
+      sessionStorage.setItem('isHost', isHost ? 'true' : 'false');
+      sessionStorage.setItem('onlineName', name);
+      sessionStorage.setItem('onlineSecret', secret);
+      wrapper.remove();
+      setStatus('Menyiapkan room...');
       try{
-        if(isHost){ await createRoomOnFirebase(code, name, secret); alert('Room dibuat: '+code+'\nTunggu pemain bergabung'); }
-        else { await joinRoomOnFirebase(code, name, secret); alert('Berhasil bergabung: '+code); }
-        sessionStorage.setItem('onlineRoom', code); sessionStorage.setItem('onlineName', name); sessionStorage.setItem('onlineSecret', secret);
-        document.getElementById('onlineSetupWrapper')?.remove();
-      } catch(err){ alert('Gagal: '+(err.message || err)); }
-    }
-  }
+        if(isHost){
+          await createRoomOnFirebase(code, name, secret);
+        } else {
+          await joinRoomOnFirebase(code, name, secret);
+        }
+      } catch(err){
+        setStatus(err.message || 'Gagal membuat/bergabung room');
+      }
+    };
+  };
 
-  // Create room in DB
+  // create room
   async function createRoomOnFirebase(roomCode, playerName, secret){
     const roomRef = ref(db, 'rooms/' + roomCode);
     await set(roomRef, {
@@ -317,6 +528,7 @@ function showEnd(msg, win){ $('endMsg').textContent = msg; $('endDetails').inner
     listenRoom(roomCode);
   }
 
+  // join room
   async function joinRoomOnFirebase(roomCode, playerName, secret){
     const roomRef = ref(db, 'rooms/' + roomCode);
     const snap = await get(roomRef);
@@ -327,78 +539,158 @@ function showEnd(msg, win){ $('endMsg').textContent = msg; $('endDetails').inner
     listenRoom(roomCode);
   }
 
-  // listen for room changes
+  // listen room updates
   let roomUnsub = null;
   function listenRoom(roomCode){
     const rref = ref(db, 'rooms/' + roomCode);
     if(roomUnsub) roomUnsub();
-    const off = onValue(rref, (snap)=>{ const room = snap.val(); onRoomUpdate(room, roomCode); });
+    const off = onValue(rref, (snap)=>{
+      const room = snap.val();
+      onRoomUpdate(room, roomCode);
+    });
     roomUnsub = ()=> off();
   }
 
-  async function onRoomUpdate(room, code){
-    if(!room) { alert('Room telah dihapus'); return; }
-    const isHost = sessionStorage.getItem('isHost') === 'true';
-    const role = isHost ? 'host' : 'guest';
+  // helper to compute match
+  function matchLocal(a,b){ let c=0; for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c; }
 
-    // update secret table (show _your_ secret only locally)
-    const tbl = $('playerSecretTable'); tbl.innerHTML=''; const mySecret = isHost ? room.host?.secret : room.guest?.secret; const secShow = mySecret || '????'; for(const ch of secShow) { const d=document.createElement('div'); d.textContent=ch; tbl.appendChild(d); }
+  // handle incoming room updates
+  async function onRoomUpdate(room, code){
+    if(!room) { setStatus('Room dibubarkan'); return; }
+    const isHost = sessionStorage.getItem('isHost') === 'true';
+    const myRole = isHost ? 'host' : 'guest';
+    // update secret table: show my secret locally
+    const tbl = $('playerSecretTable'); tbl.innerHTML = '';
+    const mySecret = isHost ? room.host?.secret : room.guest?.secret;
+    const secShow = mySecret || '????';
+    for(const ch of secShow) { const d = document.createElement('div'); d.textContent = ch; tbl.appendChild(d); }
 
     // update histories
-    $('playerHistory').innerHTML=''; $('opponentHistory').innerHTML='';
-    if(room.hostHistory) Object.values(room.hostHistory).forEach(it=> $('playerHistory').innerHTML += `<div><span>${it.guess}</span> → ${it.result}</div>`);
-    if(room.guestHistory) Object.values(room.guestHistory).forEach(it=> $('opponentHistory').innerHTML += `<div><span>${it.guess}</span> → ${it.result}</div>`);
+    $('playerHistory').innerHTML = ''; $('opponentHistory').innerHTML = '';
+    if(room.hostHistory) Object.values(room.hostHistory).forEach(it => $('playerHistory').innerHTML += `<div><span style="font-weight:700">${it.guess}</span> → ${it.result}</div>`);
+    if(room.guestHistory) Object.values(room.guestHistory).forEach(it => $('opponentHistory').innerHTML += `<div><span style="font-weight:700">${it.guess}</span> → ${it.result}</div>`);
 
-    // change screens based on state
-    if(room.state === 'waiting'){
-      alert('Room dibuat, menunggu lawan. Kode: '+code);
-      show('opponentTurn'); $('opponentTitle').textContent = 'Menunggu pemain bergabung...';
-    } else if(room.state === 'playing'){
-      const turn = room.turn; const myName = isHost ? room.host?.name : room.guest?.name; const oppName = isHost ? room.guest?.name : room.host?.name;
-      if(turn === (isHost ? 'host' : 'guest')){
-        $('playerTurnTitle').textContent = `Giliranmu — Tebak ${oppName || 'Lawan'}`; show('playerTurn');
+    // handle pendingGuess (if someone submitted a guess and waiting feedback)
+    if(room.pendingGuess){
+      const pg = room.pendingGuess; // {by:'host'|'guest', guess: '1234', ts}
+      // if pending guess is made by other role => we must feedback
+      if(pg.by !== myRole){
+        $('opponentGuess').textContent = pg.guess;
+        // store the pending info to be used by feedback button handler
+        window._pendingOnline = { code, pg, room };
+        show('opponentTurn');
+        setStatus('Lawan menebak — berikan feedback (0–4)');
+        return;
       } else {
-        $('opponentTitle').textContent = `Giliran ${oppName || 'Lawan'}`; $('opponentGuess').textContent = 'Menunggu...'; show('opponentTurn');
+        // pending by me (we sent guess) -> waiting other to feedback
+        $('opponentGuess').textContent = 'Menunggu feedback lawan...';
+        show('opponentTurn');
+        setStatus('Menunggu lawan memberi feedback');
+        return;
+      }
+    }
+
+    // no pending guess -> normal state
+    if(room.state === 'waiting'){
+      // host waiting guest
+      if(isHost){
+        $('opponentTitle').textContent = 'Menunggu pemain bergabung...';
+        show('opponentTurn');
+        setStatus('Room siap, tunggu pemain masuk (kode: '+code+')');
+      } else {
+        show('onlineMenu'); setStatus('Hubungkan sebagai guest gagal (tunggu host buat room)');
+      }
+    } else if(room.state === 'playing'){
+      // determine whose turn
+      const turn = room.turn; // 'host' or 'guest'
+      const oppName = isHost ? room.guest?.name : room.host?.name;
+      if(turn === myRole){
+        $('playerTurnTitle').textContent = `Giliranmu — Tebak ${oppName || 'Lawan'}`;
+        show('playerTurn');
+        setStatus('Giliranmu');
+      } else {
+        $('opponentTitle').textContent = `Giliran ${oppName || 'Lawan'}`;
+        $('opponentGuess').textContent = 'Menunggu...';
+        show('opponentTurn');
+        setStatus('Tunggu lawan mengirim tebakan');
       }
     } else if(room.state === 'ended'){
-      const winner = room.winner; const winnerName = winner === 'host' ? room.host?.name : room.guest?.name;
-      alert(`${winnerName} menang!`);
-      show('endScreen'); $('endMsg').textContent = winnerName + ' menang (Online)';
+      const winner = room.winner;
+      const winnerName = winner === 'host' ? room.host?.name : room.guest?.name;
+      showEndOnline(`${winnerName} menang (Online)`);
     }
   }
 
-  // submit guess online
-  window.submitGuessOnline = async function(guessStr){
-    const code = sessionStorage.getItem('onlineRoom'); if(!code) return alert('Room tidak ada');
-    const isHost = sessionStorage.getItem('isHost') === 'true'; const role = isHost? 'host':'guest';
-    if(!/^[1-9]{4}$/.test(guessStr) || new Set(guessStr).size!==4) return alert('Tebakan harus 4 angka unik (1-9)');
-    const roomSnap = await get(ref(db, 'rooms/'+code)); if(!roomSnap.exists()) return alert('Room tidak ditemukan');
-    const room = roomSnap.val(); const opponentSecret = role==='host' ? room.guest?.secret : room.host?.secret; if(!opponentSecret) return alert('Lawan belum isi secret');
-    const result = match(guessStr, opponentSecret);
-    const histPath = role==='host' ? 'rooms/'+code+'/hostHistory' : 'rooms/'+code+'/guestHistory';
-    const newRef = push(ref(db, histPath)); await set(newRef, { guess: guessStr, result: result, ts: serverTimestamp() });
-    const roomRef = ref(db, 'rooms/' + code);
-    if(result === 4){ await update(roomRef, { state: 'ended', winner: role }); }
-    else { const next = role==='host' ? 'guest' : 'host'; await update(roomRef, { turn: next }); }
+  // show end for online
+  function showEndOnline(msg){
+    $('endMsg').textContent = msg;
+    show('endScreen');
   }
 
-  // wire UI events to functions
-  document.getElementById('btnMakeStart').addEventListener('click', ()=> window.goToOnlineSetup(true));
-  document.getElementById('btnJoinStart').addEventListener('click', ()=> window.goToOnlineSetup(false));
+  // submit guess online -> writes pendingGuess (instead of immediate history)
+  window.submitGuessOnline = async function(guessStr){
+    const code = sessionStorage.getItem('onlineRoom');
+    if(!code) { setStatus('Belum terhubung ke room'); return; }
+    const isHost = sessionStorage.getItem('isHost') === 'true';
+    const role = isHost ? 'host' : 'guest';
+    if(!/^[1-9]{4}$/.test(guessStr) || new Set(guessStr).size!==4){ setStatus('Tebakan harus 4 angka unik'); return; }
 
-  // connect guess button to online function if online
-  document.getElementById('guessBtn').addEventListener('click', ()=>{
-    const isOnline = sessionStorage.getItem('onlineRoom');
-    const g = [$('g1').value,$('g2').value,$('g3').value,$('g4').value].join('');
-    if(isOnline) { window.submitGuessOnline(g).catch(e=>alert('Error: '+e.message)); $('g1').value=$('g2').value=$('g3').value=$('g4').value=''; return; }
+    // write pendingGuess field
+    const roomRef = ref(db, 'rooms/' + code);
+    await update(roomRef, { pendingGuess: { by: role, guess: guessStr, ts: serverTimestamp() } });
+    setStatus('Tebakan dikirim, menunggu feedback lawan...');
+  }
+
+  // when local user presses feedback on pending online guess
+  window.handleLocalFeedbackForPending = async function(feedbackValue){
+    const pending = window._pendingOnline;
+    if(!pending) { setStatus('Tidak ada tebakan untuk diberi feedback'); return; }
+    const { code, pg } = pending;
+    const isHost = sessionStorage.getItem('isHost') === 'true';
+    const role = isHost ? 'host' : 'guest';
+    // compute real match using our stored secret
+    const mySecret = sessionStorage.getItem('onlineSecret') || '';
+    const real = matchLocal(pg.guess, mySecret);
+    if(feedbackValue !== real){
+      // lying detected -> show cheat screen (local), do not update DB; require repentance
+      // show cheat modal (use parent window function)
+      window.parent && window.parent.showCheat ? window.parent.showCheat('feedback') : null;
+      // also use page's function showCheat if present
+      if(typeof window.showCheat === 'function') window.showCheat('feedback');
+      return;
+    }
+    // honest -> write history on DB and clear pendingGuess, update turn
+    const histPath = (pg.by === 'host') ? 'rooms/'+code+'/hostHistory' : 'rooms/'+code+'/guestHistory';
+    const newRef = push(ref(db, histPath));
+    await set(newRef, { guess: pg.guess, result: feedbackValue, ts: serverTimestamp() });
+    const roomRef = ref(db, 'rooms/' + code);
+    if(feedbackValue === 4){
+      await update(roomRef, { state: 'ended', winner: pg.by, pendingGuess: null });
+    } else {
+      const next = pg.by === 'host' ? 'guest' : 'host';
+      await update(roomRef, { turn: next, pendingGuess: null });
+    }
+    // clear local pending
+    window._pendingOnline = null;
+    setStatus('Feedback dikirim — giliran beralih');
+  };
+
+  // wire Make/Join start buttons to open modal
+  $('btnMakeStart').addEventListener('click', ()=> window.goToOnlineSetup(true));
+  $('btnJoinStart').addEventListener('click', ()=> window.goToOnlineSetup(false));
+
+  // cleanup room on unload if host created it and wants to remove (optional)
+  window.addEventListener('beforeunload', async (ev)=>{
+    const room = sessionStorage.getItem('onlineRoom');
+    if(room){
+      // do nothing forced; we avoid confirm() popup to keep UX simple
+      // optionally remove room if you want:
+      // await remove(ref(db,'rooms/'+room));
+    }
   });
 
-  // small cleanup when leaving
-  window.addEventListener('beforeunload', ()=>{ const room = sessionStorage.getItem('onlineRoom'); if(room && confirm('Keluar akan membubarkan room?')){ remove(ref(db,'rooms/'+room)); } });
-
-  // debug helper
-  window._firebase={db,auth};
-
+  // expose debug
+  window._firebase = { db, auth };
 </script>
 
 </body>
