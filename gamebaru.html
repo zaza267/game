@@ -1,285 +1,494 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Tebak 4 Angka — vs Bot & Mabar</title>
-<style>
-/* ===== CSS utama ===== */
-body { font-family: "Poppins", sans-serif; background: linear-gradient(135deg, #ffe6f0, #ffd7e5); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-.screen { display: none; text-align: center; background: #fff; padding: 24px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 380px; max-height: 90vh; overflow-y: auto; position: relative; }
-.active { display: block; }
-h1 { color: #b30057; font-size: 24px; margin-bottom: 12px; }
-input[type=text] { text-align: center; width: 80%; font-size: 20px; padding: 10px; margin: 8px; border: 2px solid #ffcce0; border-radius: 10px; }
-button { background: #ff7aa2; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: 0.2s; }
-button:hover { background: #ff5d8a; transform: scale(1.05); }
-.num-btn { width: 50px; height: 50px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid #eee; cursor: pointer; margin: 6px; background: #fff0f5; color: #b30057; transition: all .2s; }
-.num-btn:hover { background: #ffd6e8; transform: scale(1.1); }
-.table-secret { display: flex; justify-content: center; gap: 8px; margin: 10px 0 20px; }
-.table-secret div { background: #d2b48c; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; border-radius: 6px; font-weight: 700; }
-.bot-box { background: linear-gradient(135deg, #ffccd5, #d2b48c); color: #5a2c2c; border-radius: 10px; padding: 20px; font-size: 26px; font-weight: 800; width: 160px; margin: 12px auto; }
-.history { background: #fff6f9; border-radius: 10px; padding: 10px; margin-top: 12px; text-align: left; max-height: 180px; overflow-y: auto; font-size: 14px; line-height: 1.6; }
-.history span { color: #b30057; font-weight: 600; }
-.rules { text-align: left; background: #fff0f5; border-radius: 10px; padding: 12px 16px; margin-top: 14px; font-size: 14px; color: #5a2c2c; }
-.guess-grid { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
-.guess-grid input { width: 50px; height: 50px; border-radius: 10px; font-size: 22px; font-weight: bold; border: 2px solid #ffb6c1; color: #b30057; text-align: center; }
-#playerNameDisplay { position: absolute; top: 12px; left: 12px; color: #b30057; font-weight: 700; font-size: 14px; }
-.surrender-btn { position: absolute; top: 10px; right: 14px; background: #ff5d8a; color: white; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
-/* Lightbox popup tengah */
-#lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 240, 245, 0.3); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 999; }
-#lightbox img { width: 320px; max-width: 90%; border-radius: 16px; border: 4px solid #ff7aa2; box-shadow: 0 8px 25px rgba(0,0,0,0.2); animation: pop .3s ease; }
-@keyframes pop {from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);} }
-.verse { margin-top: 12px; background: #fff0f5; border-radius: 10px; padding: 10px; color: #5a2c2c; font-size: 13px; font-style: italic; }
-#endScreen img, #cheatScreen img, #surrenderScreen img { width: 160px; height: 160px; border-radius: 50%; margin: 16px 0; object-fit: cover; border: 4px solid #ff7aa2; cursor: pointer; transition: 0.3s; }
-#endScreen img:hover, #cheatScreen img:hover, #surrenderScreen img:hover { transform: scale(1.05); }
-#endDetails, #cheatDetails, #surrenderDetails { background: #fff0f5; border-radius: 10px; padding: 10px; color: #5a2c2c; font-weight: 600; margin-top: 8px; }
-#errorScreen { background: #8b0000; color: #fff; text-align: center; }
-.btn-row { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tebak Angka Mabar</title>
+    <script src="https://www.gstatic.com/firebasejs/7.21.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.21.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.21.1/firebase-analytics.js"></script>
+    <style>
+        /* Gaya Dasar */
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388E3C;
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --card-background: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --input-border: #ccc;
+        }
+        body.dark {
+            --primary-color: #66BB6A;
+            --secondary-color: #4CAF50;
+            --background-color: #121212;
+            --text-color: #e0e0e0;
+            --card-background: #1e1e1e;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --input-border: #555;
+        }
 
-/* Multiplayer screen specific styles */
-.multiplayer-block { background: #fff0f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
-.room-code { font-size: 28px; font-weight: bold; color: #b30057; margin: 10px 0; padding: 10px; border: 2px dashed #ffcce0; border-radius: 8px; display: inline-block; cursor: pointer; }
-.join-input { width: 70%; padding: 10px; font-size: 18px; border: 2px solid #ffcce0; border-radius: 10px; text-align: center; margin-bottom: 10px; }
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-/* Waiting screen styles */
-#waitScreen { background: linear-gradient(135deg, #e6f0ff, #d7e5ff); color: #0057b3; }
-#waitScreen h1 { color: #0057b3; }
-.spinner { border: 8px solid #f3f3f3; border-top: 8px solid #b30057; border-radius: 50%; width: 50px; height: 50px; animation: spin 1.5s linear infinite; margin: 20px auto; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.wait-text { font-size: 18px; font-weight: 600; margin-top: 10px; }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-/* Overlay Wait (Tulisan 'Wait' saat lawan mengetik/feedback) */
-#mabarWaitOverlay, #mabarWaitOverlayBot {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(2px);
-    z-index: 10;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    border-radius: 16px;
-    color: #b30057;
-    font-weight: bold;
-}
-#mabarWaitOverlay .spinner, #mabarWaitOverlayBot .spinner { border-top: 8px solid #b30057; width: 30px; height: 30px; margin-bottom: 10px;}
+        /* Gaya Layar */
+        .screen {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            display: none;
+            transition: opacity 0.3s;
+        }
+        .screen.active {
+            display: block;
+        }
 
+        /* Gaya Tombol */
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        button.secondary {
+            background-color: #f44336;
+        }
+        button.secondary:hover {
+            background-color: #d32f2f;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-group button {
+            flex: 1;
+            margin-top: 0;
+        }
 
-/* ===== Switch pojok kiri atas (dirapikan) ===== */
-#topSwitches { 
-    position: fixed; 
-    top: 12px; 
-    left: 12px; 
-    display: flex; 
-    gap: 12px; /* Jarak antar switch */
-    z-index: 1000; 
-}
-.switch { position: relative; display: inline-block; width: 60px; height: 28px; }
-.switch input { display: none; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ffb6c1; border-radius: 34px; transition: 0.3s; }
-.slider:before { position: absolute; content: "🌙"; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; }
-input:checked + .slider { background-color: #b30057; }
-input:checked + .slider:before { transform: translateX(32px); content: "☀️"; }
-.slider.music { background-color: #ffd1dc; }
-.slider.music:before { content: "🎵"; }
-input:checked + .slider.music:before { content: "🔊"; }
-/* Mode gelap */
-body.dark { background: linear-gradient(135deg, #2b002b, #4a004a); color: #f8d8e8; }
-body.dark .screen { background: #3a003a; color: #f8d8e8; box-shadow: 0 6px 15px rgba(0,0,0,0.4); }
-body.dark button { background: #a34a78; color: white; }
-body.dark button:hover { background: #c15a8f; }
-body.dark .history { background: #4a004a; color: #fbd7e8; }
-body.dark .rules { background: #4a004a; color: #ffe6f0; }
-body.dark .multiplayer-block { background: #4a004a; }
-body.dark .room-code { color: #f8d8e8; border: 2px dashed #a34a78; }
-body.dark #mabarWaitOverlay, body.dark #mabarWaitOverlayBot { background: rgba(0, 0, 0, 0.8); color: #ff7aa2; }
-</style>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+        /* Gaya Input */
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            background: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        .guess-inputs {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .guess-inputs input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5em;
+            padding: 0;
+        }
+
+        /* Gaya Feedback */
+        #feedbackArea {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .num-btn {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .num-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Gaya Riwayat */
+        .history {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--input-border);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .history div {
+            padding: 5px 0;
+            border-bottom: 1px dashed var(--input-border);
+            display: flex;
+            justify-content: space-between;
+        }
+        .history div:last-child {
+            border-bottom: none;
+        }
+
+        /* Gaya Overlay Tunggu & Loading */
+        #waitOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: none; /* Default: Sembunyi */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+            border-radius: 12px;
+        }
+        #waitOverlay.active {
+            display: flex;
+        }
+        #waitOverlay .message {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        /* Gaya Kode Room */
+        .room-code {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #FFC107;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .room-code:hover {
+            text-decoration: underline;
+        }
+
+        /* Gaya Meja Rahasia */
+        .secret-table {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 15px 0;
+        }
+        .secret-table div {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border: 2px solid var(--primary-color);
+            border-radius: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        /* Setting Toggle */
+        .settings {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Lightbox */
+        #lightbox {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            padding-top: 60px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+        }
+        #lightboxImg {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+        #lightbox .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+    </style>
 </head>
-<body onbeforeunload="cleanupRoom()">
+<body>
 
-<div id="topSwitches">
-  <label class="switch">
-    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
-    <span class="slider"></span>
-  </label>
-  <label class="switch">
-    <input type="checkbox" id="musicToggle" onchange="toggleMusic()">
-    <span class="slider music"></span>
-  </label>
+<audio id="bgMusic" loop>
+    <source src="your-background-music.mp3" type="audio/mpeg"> 
+</audio>
+
+<div class="settings">
+    <div class="toggle-switch" title="Mode Gelap">
+        <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()">
+        <span class="slider"></span>
+    </div>
+    <div class="toggle-switch" title="Musik Latar">
+        <input type="checkbox" id="musicToggle" onclick="toggleMusic()">
+        <span class="slider"></span>
+    </div>
 </div>
 
-<audio id="bgMusic" src="Kasih Putih (Acoustic).mp3" loop></audio>
+<div class="container">
+    
+    <div id="welcome" class="screen active">
+        <h2>Selamat Datang di Tebak Angka</h2>
+        <p>Tujuanmu: Tebak 4 angka unik rahasia lawan!</p>
+        <button onclick="show('modeSelect')">Mulai</button>
+    </div>
 
-<div id="playerNameDisplay"></div>
+    <div id="modeSelect" class="screen">
+        <h2>Pilih Mode Permainan</h2>
+        <button onclick="show('botSetup')">VS Komputer</button>
+        <button onclick="show('multiplayerSetup')">Multiplayer (Mabar)</button>
+    </div>
 
-<div id="welcome" class="screen active">
-  <h1>🎮 Selamat Datang di Game Tebak 4 Angka 🎀</h1>
-  <p>Pilih mode permainan:</p>
-  <div class="btn-row" style="flex-direction:column; gap:15px;">
-    <div style="background: #fff0f5; padding: 20px; border-radius: 10px;">
-      <h3>Melawan Bot 🤖</h3>
-      <input id="name_bot" type="text" placeholder="Nama Pemain"><br>
-      <input id="secret_bot" type="text" maxlength="4" placeholder="Angka Kamu"><br>
-      <button onclick="startGame(false)">Mulai Game (vs Bot) ▶️</button>
-    </div>
-    <button onclick="show('multiplayerSetup')">Mabar (Multiplayer) 👯</button>
-  </div>
-  <div class="btn-row">
-    <button onclick="showHistoryScreen()">📜 Riwayat</button>
-  </div>
-  <div class="rules">
-    <h2>📜 Peraturan & Petunjuk:</h2>
-    <ul>
-      <li>Gunakan angka <b>1–9</b> (tidak boleh 0 dan tidak boleh ganda).</li>
-      <li>Pemain dan lawan bergantian menebak angka satu sama lain.</li>
-      <li>Jika hasil <b>4</b>, maka pemain yang menebak <b>MENANG!</b> 🎉</li>
-    </ul>
-  </div>
-</div>
+    <div id="botSetup" class="screen">
+        <h2>Setup VS Komputer</h2>
+        <label for="name_bot">Nama Anda:</label>
+        <input type="text" id="name_bot" placeholder="Masukkan nama Anda">
+        
+        <label for="secret_bot">Angka Rahasia (4 angka unik):</label>
+        <input type="number" id="secret_bot" placeholder="1234">
 
-<div id="multiplayerSetup" class="screen">
-  <h1>👯 Mabar (Multiplayer)</h1>
-  <p>Pilih mode koneksi:</p>
-  
-    <div class="multiplayer-block">
-    <h3>🔑 Buat Room Baru (Host)</h3>
-    <p id="hostRoomCodeDisplay">Tekan tombol untuk membuat kode.</p>
-    <button id="generateRoomBtn" onclick="generateRoom()">Generate Room</button>
-        <button id="hostStartBtn" style="display:none;" onclick="showNameSecretSetup('host')">Masuk Room ▶️</button> 
-  </div>
-  
-  ---
-  
-    <div class="multiplayer-block">
-    <h3>🚪 Gabung Room</h3>
-    <input id="joinRoomInput" type="text" class="join-input" maxlength="4" placeholder="Masukkan Kode Party"><br>
-    <button onclick="showNameSecretSetup('join')">Gabung Room ▶️</button>
-  </div>
-  
-  <button onclick="cleanupAndShow('welcome')">⬅️ Kembali</button>
-</div>
+        <button onclick="startGame(false)">Mulai Game</button>
+        <button class="secondary" onclick="show('modeSelect')">Kembali</button>
+    </div>
 
-<div id="mabarNameSecret" class="screen">
-  <h1>🎮 Siap Mabar!</h1>
-  <p>Masukkan namamu dan angka rahasiamu:</p>
-  <input id="name_mabar" type="text" placeholder="Nama Pemain"><br>
-  <input id="secret_mabar" type="text" maxlength="4" placeholder="Angka Kamu"><br>
-    <button id="mabarStartGameBtn" onclick="startMultiplayerGame()">Lanjutkan ▶️</button> 
-  <button onclick="cleanupAndShow('multiplayerSetup')">⬅️ Kembali</button>
-</div>
+    <div id="multiplayerSetup" class="screen">
+        <h2>Setup Multiplayer</h2>
+        <div class="btn-group">
+            <button onclick="generateRoom()">Buat Room (Host)</button>
+            <button onclick="show('joinRoom')">Gabung Room (Join)</button>
+        </div>
+        <button class="secondary" onclick="show('modeSelect')">Kembali</button>
+    </div>
 
-<div id="waitScreen" class="screen">
-  <h1>⏳ Tunggu Lawan</h1>
-  <div class="spinner"></div>
-  <p class="wait-text" id="waitMessage">Menunggu pemain lain bergabung...</p>
-  <button id="cancelWaitBtn" onclick="cleanupAndShow('multiplayerSetup')">Batalkan dan Kembali</button>
+    <div id="joinRoom" class="screen">
+        <h2>Gabung Room</h2>
+        <label for="joinRoomInput">Kode Room 4 Angka:</label>
+        <input type="text" id="joinRoomInput" placeholder="ABCD" maxlength="4" oninput="this.value = this.value.toUpperCase()">
+        <button onclick="showNameSecretSetup('join')">Cari Room</button>
+        <button class="secondary" onclick="show('multiplayerSetup')">Kembali</button>
+    </div>
+
+    <div id="mabarNameSecret" class="screen">
+        <h2>Setup Angka Rahasia Mabar</h2>
+        <label for="name_mabar">Nama Anda:</label>
+        <input type="text" id="name_mabar" placeholder="Masukkan nama Anda">
+        
+        <label for="secret_mabar">Angka Rahasia (4 angka unik):</label>
+        <input type="number" id="secret_mabar" placeholder="1234">
+
+        <button id="mabarStartGameBtn" onclick="startMultiplayerGame()">Lanjutkan Setup</button>
+        <button class="secondary" onclick="cleanupAndShow('multiplayerSetup')">Batalkan</button>
+    </div>
+
+    <div id="waitScreen" class="screen">
+        <h2>Menunggu Pemain...</h2>
+        <p id="waitMessage" style="text-align: center; font-size: 1.1em;"></p>
+        <button id="cancelWaitBtn" class="secondary" onclick="cleanupAndShow('multiplayerSetup')">Batalkan dan Kembali</button>
+    </div>
+
+    <div id="playerTurn" class="screen">
+        <h2 id="turnHeader">Tebak Angka Lawan 🎯</h2>
+        <p id="playerNameDisplay" style="font-weight: bold;"></p>
+
+        <div class="secret-table" id="playerSecretTable"></div>
+
+        <p id="result" style="font-style: italic;"></p>
+
+        <div class="guess-inputs">
+            <input type="number" id="g1" maxlength="1" oninput="if(this.value.length>this.maxLength) this.value=this.value.slice(0,this.maxLength)">
+            <input type="number" id="g2" maxlength="1" oninput="if(this.value.length>this.maxLength) this.value=this.value.slice(0,this.maxLength)">
+            <input type="number" id="g3" maxlength="1" oninput="if(this.value.length>this.maxLength) this.value=this.value.slice(0,this.maxLength)">
+            <input type="number" id="g4" maxlength="1" oninput="if(this.value.length>this.maxLength) this.value=this.value.slice(0,this.maxLength)">
+        </div>
+        
+        <div style="text-align: center;">
+            <button id="guessBtn" onclick="submitGuess()">Kirim Tebakan</button>
+            <button id="doneBtn" onclick="afterOpponentFeedback()" style="display: none;">Sudah (Lanjut)</button>
+        </div>
+
+        <h3 id="playerHistHeader">Riwayat Tebakanmu:</h3>
+        <div class="history" id="playerHistory"></div>
+        
+        <div class="btn-group">
+            <button onclick="show('historyScreen')">Lihat Riwayat Lawan</button>
+            <button class="secondary" onclick="confirmSurrender()">Menyerah 🏳️</button>
+        </div>
+
+        <div id="waitOverlay">
+            <p class="message">Menunggu giliranmu...</p>
+            <div class="loader">Loading...</div>
+            <p id="typingStatusDisplay" style="font-style: italic; font-size: 0.9em; margin-top: 10px;"></p>
+            <button onclick="updateOverlay()" style="background: none; border: 1px solid white; color: white;">Refresh Status</button>
+        </div>
+    </div>
+
+    <div id="botTurn" class="screen">
+        <h2 id="opponentTurnHeader">Giliran Lawan 🔮</h2>
+        <p>Tebakan lawan: <span id="botGuess" style="font-weight: bold;"></span></p>
+
+        <p id="feedbackPrompt">Beri tahu lawan berapa angka yang benar:</p>
+
+        <div id="feedbackArea">
+            </div>
+
+        <div style="text-align: center;">
+            <button id="nextTurnBtn" onclick="nextTurn()" style="display: none;">Giliran Saya (Bot)</button>
+        </div>
+
+        <h3 id="opponentHistHeader">Riwayat Tebakan Lawan:</h3>
+        <div class="history" id="botHistory"></div>
+
+        <button onclick="show('playerTurn')">Kembali ke Giliranmu</button>
+    </div>
+
+    <div id="historyScreen" class="screen">
+        <h2>Riwayat Tebakan Lawan</h2>
+        <div class="history" id="botHistory"></div>
+        <button onclick="show('playerTurn')">Kembali</button>
+    </div>
+
+    <div id="cheatScreen" class="screen">
+        <h2>🚨 Peringatan! Kecurangan Terdeteksi! 🚨</h2>
+        <p>Feedback yang Anda berikan tidak konsisten dengan angka rahasia Anda. Harap jujur dalam bermain.</p>
+        <button class="secondary" onclick="forgiveCheat()">Oke, saya akan jujur</button>
+    </div>
+
+    <div id="surrenderScreen" class="screen">
+        <h2>Konfirmasi Menyerah</h2>
+        <p>Apakah Anda yakin ingin menyerah? Ini akan mengakhiri permainan dan lawan Anda akan menang.</p>
+        <div class="btn-group">
+            <button class="secondary" onclick="giveUp()">Ya, Saya Menyerah</button>
+            <button onclick="cancelSurrender()">Tidak, Lanjutkan Bermain</button>
+        </div>
+    </div>
+
+    <div id="endScreen" class="screen">
+        <h2 id="endMessage">Hasil Permainan</h2>
+        <button onclick="cleanupAndShow('welcome')">Main Lagi</button>
+    </div>
+
+    <div id="errorScreen" class="screen">
+        <h2>⚠️ Terjadi Kesalahan</h2>
+        <p id="errorMsg"></p>
+        <button onclick="closeError()">Tutup</button>
+    </div>
 </div>
 
 <div id="lightbox" onclick="this.style.display='none'">
-  <img id="lightboxImg" src="">
+    <span class="close">&times;</span>
+    <img id="lightboxImg" alt="Gambar Aturan">
 </div>
 
-<div id="historyScreen" class="screen">
-  <h1>📜 Riwayat Permainan</h1>
-  <div id="historyList"></div>
-  <button onclick="show('welcome')">⬅️ Kembali</button>
-</div>
-
-<div id="playerTurn" class="screen">
-    <div id="mabarWaitOverlay">
-        <div class="spinner"></div>
-        <p id="playerWaitText">Menunggu lawan...</p>
-    </div>
-  <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
-  <h1 id="turnHeader">Tebak Angka Lawan 🎯</h1>
-  <div class="guess-grid">
-    <input id="g1" maxlength="1">
-    <input id="g2" maxlength="1">
-    <input id="g3" maxlength="1">
-    <input id="g4" maxlength="1">
-  </div>
-  <button id="guessBtn" onclick="submitGuess()">Kirim Tebakan</button>
-  <p id="result"></p>
-  <button id="doneBtn" style="display:none;" onclick="afterOpponentFeedback()">Sudah ✅</button>
-  <h3 id="playerHistHeader">Riwayat Tebakanmu:</h3>
-  <div class="history" id="playerHistory"></div>
-</div>
-
-<div id="botTurn" class="screen" style="background:linear-gradient(135deg,#ffe6f0,#d2b48c);">
-    <div id="mabarWaitOverlayBot">
-        <div class="spinner"></div>
-        <p id="botWaitText">Menunggu lawan...</p>
-    </div>
-  <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
-  <h1 id="opponentTurnHeader">Giliran Lawan 🔮</h1>
-  <p>Angka rahasiamu:</p>
-  <div id="playerSecretTable" class="table-secret"></div>
-  <div class="bot-box" id="botGuess">----</div>
-  <p id="feedbackPrompt">Beri tahu lawan berapa angka yang benar:</p>
-  <div id="feedbackArea"></div>
-  <button id="nextTurnBtn" style="display:none;" onclick="nextTurn()">Sudah ✅</button>
-  <h3 id="opponentHistHeader">Riwayat Tebakan Lawan:</h3>
-  <div class="history" id="botHistory"></div>
-</div>
-
-<div id="cheatScreen" class="screen">
-  <img src="IMG-20251006-WA0031.jpg" alt="Jangan Curang" onclick="openLightbox(this)">
-  <h1>🚫 Jangan Curang!</h1>
-  <div id="cheatDetails">
-    <p>Kamu memberi feedback yang salah... 😔<br>Ingatlah untuk bermain jujur ya!</p>
-    <blockquote><b>Amsal 12:22</b> — "Bibir dusta adalah kekejian bagi TUHAN, tetapi orang yang berlaku setia dikenan-Nya."</blockquote>
-  </div>
-  <div class="verse">💡 “Hendaklah integritasmu nyata di setiap hal kecil.”</div>
-  <button onclick="forgiveCheat()">🙏 Saya Bertobat</button>
-</div>
-
-<div id="surrenderScreen" class="screen">
-  <img src="IMG-20251016-WA0019.jpg" alt="Menyerah" onclick="openLightbox(this)">
-  <h1>😢 Yakin nih mau nyerah?</h1>
-  <div id="surrenderDetails">
-    <p>Kalau menyerah, kamu langsung dinyatakan kalah loh!</p>
-  </div>
-  <div class="verse">📖 <b>Filipi 4:13</b> — “Segala perkara dapat kutanggung di dalam Dia yang memberi kekuatan kepadaku.”</div>
-  <div class="btn-row">
-    <button onclick="cancelSurrender()">Tidak 😤</button>
-    <button onclick="giveUp()">Iya 😔</button>
-    </div>
-</div>
-
-<div id="endScreen" class="screen">
-  <img id="endImg" src="" alt="Foto Akhir" onclick="openLightbox(this)">
-  <h1 id="endMsg"></h1>
-  <div id="endDetails"></div>
-  <div id="endVerse" class="verse"></div>
-  <button onclick="location.reload()">Main Lagi 🔁</button>
-</div>
-
-<div id="errorScreen" class="screen">
-  <h1 id="errorMsg"></h1>
-  <button onclick="closeError()">Baiklah 😅</button>
-</div>
 
 <script>
-/* ===== Script game & switch ===== */
+// ==========================================================
+// INI BAGIAN JAVASCRIPT YANG SUDAH DIPERBAIKI KRITIS
+// ==========================================================
+/* ===== Script game & switch (Perubahan pada fungsi MABAR dan Listener) ===== */
 function openLightbox(img){document.getElementById('lightboxImg').src=img.src;document.getElementById('lightbox').style.display='flex';}
 function toggleDarkMode(){document.body.classList.toggle("dark");}
 function toggleMusic(){
-  const audio=document.getElementById("bgMusic");document.getElementById("musicToggle").checked ? audio.play() : audio.pause();}
+    const audio=document.getElementById("bgMusic");document.getElementById("musicToggle").checked ? audio.play() : audio.pause();}
 
-// Inisialisasi Firebase (Ganti dengan config Anda jika ini hanya contoh)
+// Inisialisasi Firebase (Ganti dengan config Anda yang sebenarnya)
 const firebaseConfig = {
-  apiKey: "AIzaSyCqgr3gYyc4oFg69xphOWPctvzgCisyL-I",
-  authDomain: "game-tebak-angka-2025.firebaseapp.com",
-  databaseURL: "https://game-tebak-angka-2025-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "game-tebak-angka-2025",
-  storageBucket: "game-tebak-angka-2025.firebasestorage.app",
-  messagingSenderId: "776244941517",
-  appId: "1:776244941517:web:d9655d10c9532391084f84",
-  measurementId: "G-S6NMHPNG7K"
+    apiKey: "AIzaSyCqgr3gYyc4oFg69xphOWPctvzgCisyL-I",
+    authDomain: "game-tebak-angka-2025.firebaseapp.com",
+    databaseURL: "https://game-tebak-angka-2025-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "game-tebak-angka-2025",
+    storageBucket: "game-tebak-angka-2025.firebasestorage.app",
+    messagingSenderId: "776244941517",
+    appId: "1:776244941517:web:d9655d10c9532391084f84",
+    measurementId: "G-S6NMHPNG7K"
 };
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -289,17 +498,19 @@ const analytics = firebase.analytics();
 /* Generate semua kombinasi 4 angka unik */
 const all = [];
 (function gen() {
-  const d = ['1','2','3','4','5','6','7','8','9'];
-  function back(c) {
-    if(c.length === 4){ all.push(c.join('')); return; }
-    for(const x of d) if(!c.includes(x)){ c.push(x); back(c); c.pop(); }
-  }
-  back([]);
+    const d = ['1','2','3','4','5','6','7','8','9'];
+    function back(c) {
+        if(c.length === 4){ all.push(c.join('')); return; }
+        for(const x of d) if(!c.includes(x)){ c.push(x); back(c); c.pop(); }
+    }
+    back([]);
 })();
 
 let playerSecret = "", botSecret = "", possible = [...all], botLast = "";
 let playerName = "", isMultiplayer = false, roomCode = "", playerID = null;
 let roomData = null; // Data room dari Firebase
+let hostWaitListenerRef = null; // Referensi Listener Host Tunggu
+
 const playerHist = document.getElementById('playerHistory');
 const botHist = document.getElementById('botHistory');
 
@@ -308,28 +519,25 @@ function match(a,b){ let c=0; for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function error(msg){ document.getElementById('errorMsg').textContent=msg; show('errorScreen'); }
 function closeError(){ 
-  if(isMultiplayer) { 
-    // Coba kembali ke layar game jika sedang bermain
-    if (roomData && roomData.status === 'playing') showTurnScreen(roomData.turn === playerID);
-    // Jika belum bermain, kembali ke layar tunggu/setup
-    else if (roomData && roomData.status === 'ready_to_start' && playerID === 1) show('multiplayerSetup');
-    else if (roomData && (roomData.status === 'waiting_join' || roomData.status === 'ready_to_start')) show('waitScreen');
-    else show('welcome');
-  } else if (playerSecret) {
-    show('playerTurn');
-  } else {
-    show('welcome'); 
-  }
+    if(isMultiplayer) { 
+        if (roomData && roomData.status === 'playing') showTurnScreen(roomData.turn === playerID);
+        else if (roomData && (roomData.status === 'waiting_join' || roomData.status === 'ready_to_start')) show('waitScreen');
+        else show('multiplayerSetup');
+    } else if (playerSecret) {
+        show('playerTurn');
+    } else {
+        show('welcome'); 
+    }
 }
 function cleanupAndShow(id) {
-  cleanupRoom();
-  show(id);
+    cleanupRoom();
+    show(id);
 }
 
 function setupSecretTable(secret, elementId) {
-  const tbl = document.getElementById(elementId);
-  tbl.innerHTML = "";
-  for(let ch of secret){ const cell=document.createElement('div'); cell.textContent=ch; tbl.appendChild(cell); }
+    const tbl = document.getElementById(elementId);
+    tbl.innerHTML = "";
+    for(let ch of secret){ const cell=document.createElement('div'); cell.textContent=ch; tbl.appendChild(cell); }
 }
 
 // ==========================================================
@@ -337,276 +545,246 @@ function setupSecretTable(secret, elementId) {
 // ==========================================================
 
 function startGame(isMabar) {
-  isMultiplayer = isMabar;
-  let n, sec;
+    isMultiplayer = isMabar;
+    let n, sec;
 
-  if (!isMabar) {
-    n = document.getElementById('name_bot').value.trim();
-    sec = document.getElementById('secret_bot').value.trim();
-  } else {
-    n = document.getElementById('name_mabar').value.trim();
-    sec = document.getElementById('secret_mabar').value.trim();
-  }
+    if (!isMabar) {
+        n = document.getElementById('name_bot').value.trim();
+        sec = document.getElementById('secret_bot').value.trim();
+    } else {
+        n = document.getElementById('name_mabar').value.trim();
+        sec = document.getElementById('secret_mabar').value.trim();
+    }
 
-  if(!n) return error("Nama tidak boleh kosong!");
-  if(!isValid(sec)) return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
-  
-  playerName = n; 
-  playerSecret = sec;
-  document.getElementById('playerNameDisplay').textContent = (isMabar ? `[${roomCode}] ` : "") + "👤 " + playerName;
-  playerHist.innerHTML = "";
-  botHist.innerHTML = "";
-  setupSecretTable(playerSecret, 'playerSecretTable');
+    if(!n) return error("Nama tidak boleh kosong!");
+    if(!isValid(sec)) return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
+    
+    playerName = n; 
+    playerSecret = sec;
+    document.getElementById('playerNameDisplay').textContent = (isMabar ? `[${roomCode}] ` : "") + "👤 " + playerName;
+    playerHist.innerHTML = "";
+    botHist.innerHTML = "";
+    setupSecretTable(playerSecret, 'playerSecretTable');
 
 
-  if (!isMabar) {
-    // Setup VS BOT
-    botSecret = all[Math.floor(Math.random()*all.length)];
-    possible = [...all]; // Reset possible guesses for bot
-    document.getElementById('turnHeader').textContent = "Tebak Angka Bot 🎯";
-    document.getElementById('opponentTurnHeader').textContent = "Giliran Bot 🔮";
-    document.getElementById('feedbackPrompt').textContent = "Beri tahu bot berapa angka yang benar:";
-    document.getElementById('playerHistHeader').textContent = "Riwayat Tebakanmu:";
-    document.getElementById('opponentHistHeader').textContent = "Riwayat Tebakan Bot:";
-    show('playerTurn'); g1.focus();
-  } else {
-    // Setup MULTIPLAYER - P1 (Host) Memulai Game
-    if (playerID === 1) {
-      const updates = {
-        status: 'playing', 
-        player1_name: playerName,
-        player1_secret: playerSecret,
-      };
-      updateRoomData(updates);
-      setupMultiplayerListeners(); // Mulai mendengarkan pembaruan
-    } else {
-      // P2 hanya melanjutkan listener dan menunggu Host mengirim status 'playing'
-      setupMultiplayerListeners();
-    }
-  }
+    if (!isMabar) {
+        // Setup VS BOT
+        botSecret = all[Math.floor(Math.random()*all.length)];
+        possible = [...all]; // Reset possible guesses for bot
+        document.getElementById('turnHeader').textContent = "Tebak Angka Bot 🎯";
+        document.getElementById('opponentTurnHeader').textContent = "Giliran Bot 🔮";
+        document.getElementById('feedbackPrompt').textContent = "Beri tahu bot berapa angka yang benar:";
+        document.getElementById('playerHistHeader').textContent = "Riwayat Tebakanmu:";
+        document.getElementById('opponentHistHeader').textContent = "Riwayat Tebakan Bot:";
+        show('playerTurn'); g1.focus();
+    } else {
+        // Setup MULTIPLAYER
+        if (playerID === 1) {
+            const updates = {
+                status: 'playing', 
+                player1_name: playerName,
+                player1_secret: playerSecret,
+            };
+            updateRoomData(updates);
+            setupMultiplayerListeners(); 
+        } else {
+            setupMultiplayerListeners();
+        }
+    }
 }
 
 function submitGuess() {
-  const g = [g1.value,g2.value,g3.value,g4.value].join('');
-  if(!isValid(g)) return error("Tebakan harus 4 angka unik (1–9, tanpa 0)!");
-  
-  let targetSecret = isMultiplayer ? roomData.opponentSecret : botSecret;
-  const m = match(g, targetSecret);
+    const g1 = document.getElementById('g1').value;
+    const g2 = document.getElementById('g2').value;
+    const g3 = document.getElementById('g3').value;
+    const g4 = document.getElementById('g4').value;
+    const g = [g1,g2,g3,g4].join('');
 
-  document.getElementById('result').textContent = `Hasil: ${m}`;
-  // Riwayat akan di-update oleh listener Firebase di mode Mabar
-  if (!isMultiplayer) playerHist.innerHTML += `<div><span>${g}</span> → ${m}</div>`; 
-  
-  document.getElementById('guessBtn').style.display = 'none';
-  if(m === 4){ 
-    end("Kamu menang! 🎉", true); 
-    if(isMultiplayer) updateRoomData({winner: playerName, status: 'ended'});
-    return; 
-  }
+    if(!isValid(g)) {
+        // Pastikan status mengetik di-reset jika validasi gagal
+        setTypingStatus(false); 
+        return error("Tebakan harus 4 angka unik (1–9, tanpa 0)!");
+    }
+    
+    let targetSecret = isMultiplayer ? roomData.opponentSecret : botSecret;
+    const m = match(g, targetSecret);
 
-  if (isMultiplayer) {
-    // Kirim tebakan ke lawan (Firebase)
-    updateRoomData({
-      turn: roomData.opponentID, // Pindah giliran ke lawan
-      lastGuess: g,
-      state: 'feedback_needed', // Lawan harus beri feedback
-      [`player${playerID}_typing`]: false, // Berhenti mengetik
-      // Tambahkan ke history tanpa feedback untuk sinkronisasi P1
-      history: [...(roomData.history || []), {guesser: playerName, guess: g, result: null}], 
-    });
-    // Di PlayerTurn screen, wait overlay akan muncul otomatis karena turn != playerID
-    updateOverlay();
-  } else {
-    // VS BOT
-    document.getElementById('doneBtn').style.display = 'inline-block';
-  }
+    document.getElementById('result').textContent = `Hasil: ${m}`;
+    // Riwayat akan di-update oleh listener Firebase di mode Mabar
+    if (!isMultiplayer) playerHist.innerHTML += `<div><span>${g}</span> → ${m}</div>`; 
+    
+    document.getElementById('guessBtn').style.display = 'none';
+    setTypingStatus(false); // **PENTING: Matikan status typing setelah submit berhasil**
+
+    if(m === 4){ 
+        end("Kamu menang! 🎉", true); 
+        if(isMultiplayer) updateRoomData({winner: playerName, status: 'ended'});
+        return; 
+    }
+
+    if (isMultiplayer) {
+        // Kirim tebakan ke lawan (Firebase)
+        updateRoomData({
+            turn: roomData.opponentID, 
+            lastGuess: g,
+            state: 'feedback_needed', 
+            history: [...(roomData.history || []), {guesser: playerName, guess: g, result: null}], 
+        });
+        updateOverlay();
+    } else {
+        // VS BOT
+        document.getElementById('doneBtn').style.display = 'inline-block';
+    }
 }
 
 function afterOpponentFeedback(){ 
-  // Dipanggil setelah klik 'Sudah' di VS BOT
-  document.getElementById('doneBtn').style.display='none'; 
-  clearGuess(); 
-  showOpponentTurn(); 
+    // Dipanggil setelah klik 'Sudah' di VS BOT
+    document.getElementById('doneBtn').style.display='none'; 
+    clearGuess(); 
+    showOpponentTurn(); 
 }
 
 function showOpponentTurn() {
-  if (!isMultiplayer) {
-    // Giliran BOT
-    botLast = possible[Math.floor(Math.random()*possible.length)];
-    document.getElementById('botGuess').textContent = botLast;
-    const fb = document.getElementById('feedbackArea'); fb.innerHTML = '';
-    document.getElementById('nextTurnBtn').style.display='none';
-    for(let i=0;i<=4;i++){
-      const b=document.createElement('div');
-      b.className='num-btn';
-      b.textContent=i;
-      b.onclick=()=>feedback(i);
-      fb.appendChild(b);
-    }
-    show('botTurn');
-  } else {
-    // Giliran LAWAN (Mabar) - Dipicu oleh listener Firebase (State: feedback_needed)
-    document.getElementById('opponentTurnHeader').textContent = `Giliran ${roomData.opponentName} 🔮`;
-    document.getElementById('feedbackPrompt').textContent = `Beri tahu ${roomData.opponentName} berapa angka yang benar:`;
-    
-    if (!roomData.lastGuess) return showWaitScreen(`Menunggu ${roomData.opponentName} mengirim tebakan...`);
+    if (!isMultiplayer) {
+        // Giliran BOT
+        botLast = possible[Math.floor(Math.random()*possible.length)];
+        document.getElementById('botGuess').textContent = botLast;
+        const fb = document.getElementById('feedbackArea'); fb.innerHTML = '';
+        document.getElementById('nextTurnBtn').style.display='none';
+        for(let i=0;i<=4;i++){
+            const b=document.createElement('div');
+            b.className='num-btn';
+            b.textContent=i;
+            b.onclick=()=>feedback(i);
+            fb.appendChild(b);
+        }
+        show('botTurn');
+    } else {
+        // Giliran LAWAN (Mabar) - Dipicu oleh listener Firebase (State: feedback_needed)
+        document.getElementById('opponentTurnHeader').textContent = `Giliran ${roomData.opponentName} 🔮`;
+        document.getElementById('feedbackPrompt').textContent = `Beri tahu ${roomData.opponentName} berapa angka yang benar:`;
+        
+        if (!roomData.lastGuess) return showWaitScreen(`Menunggu ${roomData.opponentName} mengirim tebakan...`);
 
-    document.getElementById('botGuess').textContent = roomData.lastGuess;
-    const fb = document.getElementById('feedbackArea'); fb.innerHTML = '';
-    document.getElementById('nextTurnBtn').style.display='none';
+        document.getElementById('botGuess').textContent = roomData.lastGuess;
+        const fb = document.getElementById('feedbackArea'); fb.innerHTML = '';
+        document.getElementById('nextTurnBtn').style.display='none';
 
-    for(let i=0;i<=4;i++){
-      const b=document.createElement('div');
-      b.className='num-btn';
-      b.textContent=i;
-      b.onclick=()=>feedback(i, roomData.lastGuess);
-      fb.appendChild(b);
-    }
-    show('botTurn');
-    setupFeedbackButtonListeners(); // Aktifkan listener typing
-    updateOverlay();
-  }
+        for(let i=0;i<=4;i++){
+            const b=document.createElement('div');
+            b.className='num-btn';
+            b.textContent=i;
+            b.onclick=()=>feedback(i, roomData.lastGuess);
+            fb.appendChild(b);
+        }
+        show('botTurn');
+        setupFeedbackButtonListeners(); 
+        updateOverlay();
+    }
 }
 
 function feedback(f, guess = botLast){
-  const realMatch = match(guess, playerSecret);
+    const realMatch = match(guess, playerSecret);
 
-  if(f !== realMatch){ show('cheatScreen'); return; }
+    if(f !== realMatch){ 
+        setTypingStatus(false); // Matikan status mengetik sebelum ke cheat screen
+        show('cheatScreen'); 
+        return; 
+    }
 
-  if (!isMultiplayer) {
-    // VS BOT
-    const filtered = possible.filter(x=>match(x, botLast)===f);
-    botHist.innerHTML += `<div><span>${botLast}</span> → ${f}</div>`;
-    if(f===4){ end("Bot menang! 🤖", false); return; }
-    possible = filtered;
-    document.getElementById('nextTurnBtn').style.display='inline-block';
-  } else {
-    // MULTIPLAYER
-    if(f===4){ 
-      end(`${roomData.opponentName} menang! 🤖`, false); 
-      updateRoomData({winner: roomData.opponentName, status: 'ended'});
-      return; 
-    }
+    setTypingStatus(false); // **PENTING: Matikan status typing setelah feedback berhasil**
 
-    // Update history lawan (guesser) dengan hasil feedback
-    const history = roomData.history;
-    const lastIndex = history.length - 1;
-    history[lastIndex].result = f; // Update hasil tebakan lawan
+    if (!isMultiplayer) {
+        // VS BOT
+        const filtered = possible.filter(x=>match(x, botLast)===f);
+        botHist.innerHTML += `<div><span>${botLast}</span> → ${f}</div>`;
+        if(f===4){ end("Bot menang! 🤖", false); return; }
+        possible = filtered;
+        document.getElementById('nextTurnBtn').style.display='inline-block';
+    } else {
+        // MULTIPLAYER
+        if(f===4){ 
+            end(`${roomData.opponentName} menang! 🤖`, false); 
+            updateRoomData({winner: roomData.opponentName, status: 'ended'});
+            return; 
+        }
 
-    // Kirim feedback ke lawan (Firebase)
-    updateRoomData({
-      turn: roomData.opponentID, // Pindah giliran ke lawan (yang menebak tadi)
-      lastFeedback: f,
-      state: 'guess_received', // Lawan akan menerima ini dan melihat hasil tebakannya
-      history: history, // Kirim history yang sudah diupdate
-      [`player${playerID}_typing`]: false, // Matikan status feedback
-    });
-    // Tunggu giliran menebak lawan
-    showWaitScreen(`Feedback terkirim. Menunggu ${roomData.opponentName} menebak kembali...`); 
-  }
+        // Update history lawan (guesser) dengan hasil feedback
+        const history = roomData.history;
+        const lastIndex = history.length - 1;
+        history[lastIndex].result = f; // Update hasil tebakan lawan
+
+        // Kirim feedback ke lawan (Firebase)
+        updateRoomData({
+            turn: roomData.opponentID, 
+            lastFeedback: f,
+            state: 'guess_received', 
+            history: history, 
+        });
+        showWaitScreen(`Feedback terkirim. Menunggu ${roomData.opponentName} menebak kembali...`); 
+    }
 }
 
-function forgiveCheat(){ 
-  // Di mode mabar, kembali ke layar feedback
-  if (isMultiplayer) {
-    updateRoomData({state: 'feedback_needed'}); // Coba ulangi feedback
-    showOpponentTurn();
-  } else {
-    show('botTurn'); 
-  }
-}
-function confirmSurrender(){ show('surrenderScreen'); }
-function cancelSurrender(){ 
-  // Logic kembali ke layar terakhir
-  if (!isMultiplayer) {
-    show(playerSecret && botLast ? 'botTurn':'playerTurn'); 
-  } else if (roomData && roomData.status === 'playing') {
-    showTurnScreen(roomData.turn === playerID);
-  }
-}
-function giveUp(){ 
-  end("Kamu menyerah 😔", false); 
-  if(isMultiplayer) updateRoomData({winner: roomData.opponentName, status: 'ended'});
-  cleanupRoom();
+function nextTurn() {
+    document.getElementById('nextTurnBtn').style.display='none';
+    showTurnScreen(true);
 }
 
-function nextTurn(){ 
-  // Hanya untuk VS BOT
-  show('playerTurn'); 
-  document.getElementById('guessBtn').style.display='inline-block'; 
-  clearGuess(); g1.focus(); 
-}
-function clearGuess(){ g1.value=g2.value=g3.value=g4.value=''; document.getElementById('result').textContent=''; }
-
-function end(msg, win){
-  const img=document.getElementById('endImg');
-  img.src=win?"IMG-20251016-WA0037.jpg":"motion_photo_7499955795629952970.jpg";
-  document.getElementById('endMsg').textContent=msg;
-
-  let p1Name, p2Name, p1Secret, p2Secret;
-
-  if (isMultiplayer && roomData) {
-    p1Name = roomData.player1_name || "Pemain 1";
-    p2Name = roomData.player2_name || "Pemain 2";
-    p1Secret = roomData.player1_secret || "----";
-    p2Secret = roomData.player2_secret || "----";
-  } else {
-    p1Name = playerName;
-    p2Name = "Bot";
-    p1Secret = playerSecret;
-    p2Secret = botSecret;
-  }
-
-  document.getElementById('endDetails').innerHTML=`<p>🔢 Angka ${p1Name}: <b>${p1Secret}</b><br>🔢 Angka ${p2Name}: <b>${p2Secret}</b></p>`;
-  
-  document.getElementById('endVerse').innerHTML = win
-    ? "📖 <b>Roma 8:37</b> — 'Tetapi dalam semuanya itu kita lebih dari pada orang-orang yang menang, oleh Dia yang telah mengasihi kita.'"
-    : "📖 <b>Yeremia 29:11</b> — 'Sebab Aku ini mengetahui rancangan-rancangan apa yang ada pada-Ku mengenai kamu, demikianlah firman TUHAN, yaitu rancangan damai sejahtera dan bukan rancangan kecelakaan.'";
-  
-  db.ref('rooms/' + roomCode).off('value'); // Stop listener
-  show('endScreen');
+function clearGuess() {
+    const inputs = [g1, g2, g3, g4];
+    inputs.forEach(input => input.value = '');
+    g1.focus();
 }
 
-/* Riwayat */
-function showHistoryScreen(){
-  const list = document.getElementById('historyList');
-  list.innerHTML = "";
-  let histContent = "";
+function end(msg, isWin) {
+    document.getElementById('endMessage').textContent = msg;
+    show('endScreen');
+    // Hapus listener Mabar setelah game berakhir
+    if (isMultiplayer && roomCode) {
+        db.ref('rooms/' + roomCode).off('value');
+    }
+}
 
-  if(isMultiplayer && roomData && roomData.history) {
-    histContent += `<h3>${roomData.player1_name || "P1"} vs ${roomData.player2_name || "P2"} (${roomCode})</h3>`;
-    let player1Hist = "<h4>Tebakan P1:</h4>", player2Hist = "<h4>Tebakan P2:</h4>";
-    
-    for (const record of roomData.history) {
-      if (record.result !== null) { // Hanya tampilkan yang sudah ada feedback
-        const html = `<div><span>${record.guess}</span> → ${record.result}</div>`;
-        if (record.guesser === roomData.player1_name) {
-          player1Hist += html;
-        } else {
-          player2Hist += html;
-        }
-      }
-    }
-    histContent += player1Hist + player2Hist;
-  } else if (!isMultiplayer) {
-    histContent += `<h3>${playerName} vs Bot</h3><h4>Tebakan Pemain:</h4>${playerHist.innerHTML || "(belum ada)"}<h4>Tebakan Bot:</h4>${botHist.innerHTML || "(belum ada)"}`;
-  }
+function confirmSurrender() { show('surrenderScreen'); }
+function cancelSurrender() { show('playerTurn'); }
+function giveUp() {
+    if (isMultiplayer) {
+        // Mabar: Kirim sinyal menyerah ke Firebase
+        updateRoomData({
+            status: 'ended', 
+            winner: roomData.opponentName,
+            disconnection: playerName
+        });
+    }
+    end("Anda menyerah. Lawan Anda menang.", false);
+}
 
-  if(histContent === ""){ 
-    list.innerHTML = "<p>Belum ada permainan yang dimulai.</p>"; 
-  } else { 
-    list.innerHTML = histContent;
-  }
-
-  show('historyScreen');
+function forgiveCheat() { 
+    // Kembali ke Giliran Lawan (Feedback)
+    showOpponentTurn(); 
 }
 
 /* Auto-pindah fokus saat input tebakan */
+const g1 = document.getElementById('g1');
+const g2 = document.getElementById('g2');
+const g3 = document.getElementById('g3');
+const g4 = document.getElementById('g4');
 const guessInputs = [g1,g2,g3,g4];
 guessInputs.forEach((input, idx)=>{
-  input.addEventListener('input', ()=>{
-    if(input.value.length===1 && idx<guessInputs.length-1){ guessInputs[idx+1].focus(); }
-  });
+    input.addEventListener('input', ()=>{
+        if(input.value.length===1 && idx<guessInputs.length-1){ 
+            guessInputs[idx+1].focus(); 
+        }
+    });
+    // Tambahkan listener keydown untuk 'Enter' di input terakhir
+    if (idx === guessInputs.length - 1) {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('guessBtn').click();
+            }
+        });
+    }
 });
 
 
@@ -617,408 +795,421 @@ guessInputs.forEach((input, idx)=>{
 let mode = ""; // 'host' atau 'join'
 
 function generateRoomCode() {
-  return Math.random().toString(36).substring(2, 6).toUpperCase();
+    return Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
 function generateRoom() {
-  roomCode = generateRoomCode();
-  sessionStorage.setItem('currentRoomCode', roomCode); // Simpan kode
-  playerID = 1; // Host selalu P1
-  mode = 'host';
-  db.ref('rooms/' + roomCode).off('value'); // Hapus listener lama jika ada
+    roomCode = generateRoomCode();
+    sessionStorage.setItem('currentRoomCode', roomCode); 
+    playerID = 1; 
+    mode = 'host';
+    db.ref('rooms/' + roomCode).off('value'); 
 
-  // Set initial room data
-  db.ref('rooms/' + roomCode).set({
-    status: 'waiting_join',
-    turn: 1, // P1 selalu mulai
-    state: 'setup',
-    history: [],
-    player1_name: "Host",
-    player2_name: "Tamu",
-    player1_typing: false,
-    player2_typing: false,
-    lastGuess: null,
-    lastFeedback: null,
-  }).then(() => {
-    showWaitScreen("Menunggu pemain lain bergabung..."); // Host masuk ke layar tunggu
-    document.getElementById('cancelWaitBtn').textContent = "Batalkan dan Kembali";
-    document.getElementById('waitMessage').innerHTML = `Room dibuat. Kode Room:<br><div class="room-code" onclick="copyCode('${roomCode}')">${roomCode}</div>(klik untuk salin)<br>Menunggu lawan...`;
+    // Set initial room data
+    db.ref('rooms/' + roomCode).set({
+        status: 'waiting_join',
+        turn: 1, 
+        state: 'setup',
+        history: [],
+        player1_name: "Host",
+        player2_name: "Tamu",
+        player1_typing: false,
+        player2_typing: false,
+        lastGuess: null,
+        lastFeedback: null,
+    }).then(() => {
+        showWaitScreen("Menunggu pemain lain bergabung..."); 
+        document.getElementById('cancelWaitBtn').textContent = "Batalkan dan Kembali";
+        
+        // **PERBAIKAN SINKRONISASI HOST (TIDAK DOUBLE KLIK):** // Ganti tombol cancel dengan tombol Lanjut jika P2 sudah siap
+        document.getElementById('waitMessage').innerHTML = `Room dibuat. Kode Room:<br><div class="room-code" onclick="copyCode('${roomCode}')">${roomCode}</div>(klik untuk salin)<br><span id="hostWaitStatus">Menunggu lawan...</span>`;
 
-    // Tambahkan listener untuk menunggu P2
-    db.ref('rooms/' + roomCode).on('value', hostWaitingListener);
-  }).catch(e => error("Gagal membuat room: " + e.message));
+        // Tambahkan listener untuk menunggu P2
+        const ref = db.ref('rooms/' + roomCode);
+        // Pastikan listener sebelumnya dimatikan
+        if (hostWaitListenerRef) ref.off('value', hostWaitListenerRef); 
+        hostWaitListenerRef = (snapshot) => hostWaitingListener(snapshot, ref);
+        ref.on('value', hostWaitListenerRef);
+    }).catch(e => error("Gagal membuat room: " + e.message));
 }
 
-function hostWaitingListener(snapshot) {
-  roomData = snapshot.val();
-  if (!roomData) return;
-  
-  if (roomData.status === 'ready_to_start' && mode === 'host') {
-    // P2 sudah bergabung dan siap
-    db.ref('rooms/' + roomCode).off('value', hostWaitingListener); // Hapus listener tunggu
-    showNameSecretSetup('host'); // Lanjut ke setup nama/angka Host
-    document.getElementById('mabarStartGameBtn').textContent = `Mulai Game vs ${roomData.player2_name || "Lawan"} ▶️`;
-  } else if (roomData.status === 'ended') {
-    end("Lawan terputus atau menyerah.", false); // Jika lawan keluar sebelum game mulai
-  }
+function hostWaitingListener(snapshot, ref) {
+    roomData = snapshot.val();
+    if (!roomData) return;
+    
+    if (roomData.status === 'ready_to_start' && mode === 'host') {
+        // P2 sudah bergabung dan siap
+        document.getElementById('hostWaitStatus').textContent = `${roomData.player2_name || "Lawan"} sudah siap! ✅`;
+        // **Perubahan: Tombol Cancel menjadi Lanjutkan Setup**
+        document.getElementById('cancelWaitBtn').textContent = `Lanjutkan Setup vs ${roomData.player2_name || "Lawan"} ▶️`;
+        document.getElementById('cancelWaitBtn').onclick = () => {
+            ref.off('value', hostWaitListenerRef); // Matikan listener tunggu
+            showNameSecretSetup('host'); // Lanjut ke setup nama/angka Host
+        };
+    } else if (roomData.status === 'ended') {
+        ref.off('value', hostWaitListenerRef); // Matikan listener
+        end("Lawan terputus atau menyerah.", false); 
+    }
 }
 
 function copyCode(code) {
-  navigator.clipboard.writeText(code).then(() => {
-    alert('Kode Room disalin: ' + code);
-  });
+    navigator.clipboard.writeText(code).then(() => {
+        alert('Kode Room disalin: ' + code);
+    });
 }
 
 function showNameSecretSetup(m) {
-  mode = m;
-  document.getElementById('name_mabar').value = "";
-  document.getElementById('secret_mabar').value = "";
+    mode = m;
+    document.getElementById('name_mabar').value = "";
+    document.getElementById('secret_mabar').value = "";
 
-  if (mode === 'join') {
-    roomCode = document.getElementById('joinRoomInput').value.trim().toUpperCase();
-    if (roomCode.length !== 4) return error("Kode room harus 4 karakter.");
-    
-    // Cek room di Firebase
-    db.ref('rooms/' + roomCode).once('value').then(snapshot => {
-      roomData = snapshot.val();
-      if (!roomData || roomData.status === 'ended') return error("Room tidak ditemukan atau sudah berakhir!");
-      if (roomData.status !== 'waiting_join') return error("Room sudah penuh atau sudah dimulai!");
+    if (mode === 'join') {
+        roomCode = document.getElementById('joinRoomInput').value.trim().toUpperCase();
+        if (roomCode.length !== 4) return error("Kode room harus 4 karakter.");
+        
+        db.ref('rooms/' + roomCode).once('value').then(snapshot => {
+            roomData = snapshot.val();
+            if (!roomData || roomData.status === 'ended' || roomData.status === 'playing' || roomData.status === 'ready_to_start') return error("Room tidak ditemukan, sudah penuh, atau sudah dimulai!");
 
-      playerID = 2; // Gabung selalu P2
-      sessionStorage.setItem('currentRoomCode', roomCode);
-      document.getElementById('mabarStartGameBtn').textContent = "Gabung Game ▶️";
-      show('mabarNameSecret');
-    }).catch(e => {
-      error("Gagal koneksi ke server: " + e.message);
-    });
-  } else {
-    // Host - Lanjut dari layar tunggu
-    if (!roomCode) return error("Harap generate room code terlebih dahulu!");
-    show('mabarNameSecret');
-  }
+            playerID = 2; // Gabung selalu P2
+            sessionStorage.setItem('currentRoomCode', roomCode);
+            document.getElementById('mabarStartGameBtn').textContent = "Gabung Game ▶️";
+            show('mabarNameSecret');
+        }).catch(e => {
+            error("Gagal koneksi ke server: " + e.message);
+        });
+    } else {
+        // Host - Lanjut dari layar tunggu
+        if (!roomCode) return error("Harap generate room code terlebih dahulu!");
+        show('mabarNameSecret');
+    }
 }
 
 function startMultiplayerGame() {
-  playerName = document.getElementById('name_mabar').value.trim();
-  playerSecret = document.getElementById('secret_mabar').value.trim();
-  
-  if(!playerName) return error("Nama tidak boleh kosong!");
-  if(!isValid(playerSecret)) return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
+    playerName = document.getElementById('name_mabar').value.trim();
+    playerSecret = document.getElementById('secret_mabar').value.trim();
+    
+    if(!playerName) return error("Nama tidak boleh kosong!");
+    if(!isValid(playerSecret)) return error("Angka rahasia harus 4 angka unik (1–9, tanpa 0)!");
 
-  if (mode === 'join') {
-    // P2 update status, nama, dan secret
-    updateRoomData({
-      status: 'ready_to_start',
-      player2_name: playerName,
-      player2_secret: playerSecret,
-    });
-    
-    showWaitScreen(`Menunggu Host (${roomData.player1_name}) memulai game...`);
-    document.getElementById('cancelWaitBtn').textContent = "Batalkan Koneksi";
-    
-    // Listener di P2 untuk menunggu Host Start
-    db.ref('rooms/' + roomCode).on('value', joinWaitingListener);
+    if (mode === 'join') {
+        // P2 update status, nama, dan secret
+        updateRoomData({
+            status: 'ready_to_start',
+            player2_name: playerName,
+            player2_secret: playerSecret,
+        });
+        
+        showWaitScreen(`Menunggu Host (${roomData.player1_name}) memulai game...`);
+        document.getElementById('cancelWaitBtn').textContent = "Batalkan Koneksi";
+        
+        // Listener di P2 untuk menunggu Host Start
+        db.ref('rooms/' + roomCode).on('value', joinWaitingListener);
 
-  } else if (mode === 'host') {
-    // Host (P1)
-    if(roomData.status !== 'ready_to_start') return error("Room masih menunggu pemain lain bergabung!");
-    
-    // P1 update nama dan secret, lalu start game
-    updateRoomData({
-      status: 'playing',
-      player1_name: playerName,
-      player1_secret: playerSecret,
-    });
-    // Langsung masuk ke game
-    setupRoomContext();
-    startGame(true);
-  }
+    } else if (mode === 'host') {
+        // Host (P1)
+        if(roomData.status !== 'ready_to_start') return error("Room masih menunggu pemain lain bergabung!");
+        
+        // P1 update nama dan secret, lalu start game
+        updateRoomData({
+            status: 'playing',
+            player1_name: playerName,
+            player1_secret: playerSecret,
+        });
+        // Langsung masuk ke game
+        setupRoomContext();
+        startGame(true);
+    }
 }
 
 function joinWaitingListener(snapshot) {
-  roomData = snapshot.val();
-  if (!roomData) return end("Koneksi terputus.", false);
-  
-  if (roomData.status === 'playing') {
-    db.ref('rooms/' + roomCode).off('value', joinWaitingListener);
-    setupRoomContext();
-    startGame(true); // Mulai game!
-  } else if (roomData.status === 'ended') {
-    end("Host membatalkan atau koneksi terputus.", false);
-  }
+    roomData = snapshot.val();
+    if (!roomData) return end("Koneksi terputus.", false);
+    
+    if (roomData.status === 'playing') {
+        db.ref('rooms/' + roomCode).off('value', joinWaitingListener);
+        setupRoomContext();
+        startGame(true); // Mulai game!
+    } else if (roomData.status === 'ended') {
+        db.ref('rooms/' + roomCode).off('value', joinWaitingListener);
+        end("Host membatalkan atau koneksi terputus.", false);
+    }
 }
 
 function setupRoomContext() {
-  // Pastikan roomData sudah terisi
-  if (!roomData) return; 
+    // Pastikan roomData sudah terisi
+    if (!roomData) return; 
 
-  if (playerID === 1) {
-    roomData.opponentName = roomData.player2_name;
-    roomData.opponentSecret = roomData.player2_secret;
-    roomData.opponentID = 2;
-  } else if (playerID === 2) {
-    roomData.opponentName = roomData.player1_name;
-    roomData.opponentSecret = roomData.player1_secret;
-    roomData.opponentID = 1;
-  }
-  
-  document.getElementById('playerNameDisplay').textContent = `[${roomCode}] 👤 ${playerName}`;
-  document.getElementById('turnHeader').textContent = `Tebak Angka ${roomData.opponentName} 🎯`;
-  document.getElementById('playerHistHeader').textContent = `Riwayat Tebakanmu (${playerName}):`;
-  document.getElementById('opponentTurnHeader').textContent = `Giliran ${roomData.opponentName} 🔮`;
-  document.getElementById('opponentHistHeader').textContent = `Riwayat Tebakan ${roomData.opponentName}:`;
+    if (playerID === 1) {
+        roomData.opponentName = roomData.player2_name;
+        roomData.opponentSecret = roomData.player2_secret;
+        roomData.opponentID = 2;
+    } else if (playerID === 2) {
+        roomData.opponentName = roomData.player1_name;
+        roomData.opponentSecret = roomData.player1_secret;
+        roomData.opponentID = 1;
+    }
+    
+    document.getElementById('playerNameDisplay').textContent = `[${roomCode}] 👤 ${playerName}`;
+    document.getElementById('turnHeader').textContent = `Tebak Angka ${roomData.opponentName} 🎯`;
+    document.getElementById('playerHistHeader').textContent = `Riwayat Tebakanmu (${playerName}):`;
+    document.getElementById('opponentTurnHeader').textContent = `Giliran ${roomData.opponentName} 🔮`;
+    document.getElementById('opponentHistHeader').textContent = `Riwayat Tebakan ${roomData.opponentName}:`;
 }
 
 
 function showWaitScreen(message) {
-  document.getElementById('waitMessage').textContent = message;
-  show('waitScreen');
+    document.getElementById('waitMessage').textContent = message;
+    // Atur ulang tombol cancel jika tidak ada logika khusus
+    if (mode !== 'host' || !roomData || roomData.status !== 'ready_to_start') {
+        document.getElementById('cancelWaitBtn').textContent = "Batalkan dan Kembali";
+        document.getElementById('cancelWaitBtn').onclick = () => cleanupAndShow('multiplayerSetup');
+    }
+    show('waitScreen');
 }
 
 // Fungsi untuk update data di Firebase
 function updateRoomData(updates) {
-  db.ref('rooms/' + roomCode).update(updates).catch(e => {
-    error("Gagal update data room: " + e.message);
-  });
+    db.ref('rooms/' + roomCode).update(updates).catch(e => {
+        error("Gagal update data room: " + e.message);
+    });
 }
 
 // Menentukan tampilan giliranmu atau giliran lawan
 function showTurnScreen(isMyTurn) {
-  // setTypingStatus(false); // Biarkan listener blur yang mengurusnya
-  setupSecretTable(playerSecret, 'playerSecretTable');
+    setupSecretTable(playerSecret, 'playerSecretTable');
 
-  if (isMyTurn) {
-    // Giliranmu untuk menebak
-    document.getElementById('guessBtn').style.display='inline-block';
-    document.getElementById('doneBtn').style.display='none';
-    clearGuess(); g1.focus();
-    show('playerTurn');
-    setupGuessInputListeners(); // Aktifkan listener typing
-    updateOverlay(); // Sembunyikan/tampilkan overlay lawan mengetik
-  } else {
-    // Giliran Lawan (Menunggu Tebakan atau Feedback)
-    // Lawan sedang menebak, saya di layar tebakan saya (wait overlay aktif)
-    show('playerTurn'); 
-    updateOverlay(); // Tampilkan wait overlay
-  }
+    if (isMyTurn) {
+        document.getElementById('guessBtn').style.display='inline-block';
+        document.getElementById('doneBtn').style.display='none';
+        clearGuess(); g1.focus();
+        show('playerTurn');
+        setupGuessInputListeners(); 
+        updateOverlay(); 
+    } else {
+        show('playerTurn'); 
+        updateOverlay(); 
+    }
 }
 
 // Sinkronisasi status mengetik
 function setTypingStatus(isTyping, isFeedback = false) {
-  if (!isMultiplayer || !roomCode || !roomData || roomData.status !== 'playing') return;
-  const key = `player${playerID}_typing`;
-  const value = isTyping ? (isFeedback ? 'feedback' : 'guess') : false;
-  db.ref('rooms/' + roomCode + '/' + key).set(value);
+    if (!isMultiplayer || !roomCode || !roomData || roomData.status !== 'playing') return;
+    const key = `player${playerID}_typing`;
+    const value = isTyping ? (isFeedback ? 'feedback' : 'guess') : false;
+    db.ref('rooms/' + roomCode + '/' + key).set(value);
 }
 
 function setupGuessInputListeners() {
-  const inputs = [g1, g2, g3, g4];
-  inputs.forEach(input => {
-    input.onfocus = () => setTypingStatus(true, false);
-    input.onblur = () => { if (input.value.length === 0) setTypingStatus(false); }; // Matikan hanya jika kosong
-  });
-  // Tambahkan listener pada tombol submit untuk memastikan status mati
-  document.getElementById('guessBtn').onclick = () => {
-    setTypingStatus(false);
-    submitGuess();
-  }
+    const inputs = [g1, g2, g3, g4];
+    inputs.forEach(input => {
+        input.onfocus = () => setTypingStatus(true, false);
+        // **PERBAIKAN KRITIS: Hapus onblur yang mengganggu saat submit**
+        input.onblur = () => { /* Logika onblur dihapus untuk menghindari race condition saat submit */ };
+    });
+    
+    // Matikan status mengetik jika input terakhir kosong
+    g4.onblur = () => { if (g4.value.length === 0) setTypingStatus(false); };
+    
+    // Pastikan status dimatikan saat tombol submit diklik, sebelum submitGuess dipanggil
+    const guessBtn = document.getElementById('guessBtn');
+    guessBtn.onclick = null; 
+    guessBtn.onclick = submitGuess;
 }
 
 function setupFeedbackButtonListeners() {
-  const buttons = document.getElementById('feedbackArea').querySelectorAll('.num-btn');
-  buttons.forEach(button => {
-    // Feedback tombol diklik berarti selesai
-    button.onclick = () => { 
-      setTypingStatus(false);
-      feedback(parseInt(button.textContent), roomData.lastGuess); 
-    };
-    // Tambahkan listener untuk status mengetik
-    button.onfocus = () => setTypingStatus(true, true);
-    button.onblur = () => setTypingStatus(false);
-  });
+    const buttons = document.getElementById('feedbackArea').querySelectorAll('.num-btn');
+    buttons.forEach(button => {
+        // Bersihkan listener lama
+        button.onclick = null;
+        button.onfocus = null;
+        button.onblur = null;
+
+        // Feedback tombol diklik berarti selesai
+        button.onclick = (e) => { 
+            // setTypingStatus(false) dipanggil di dalam fungsi feedback
+            feedback(parseInt(e.target.textContent), roomData.lastGuess); 
+        };
+        
+        // Tambahkan listener untuk status mengetik
+        button.onfocus = () => setTypingStatus(true, true);
+        button.onblur = () => setTypingStatus(false);
+    });
+}
+
+function updateHistoryDisplay(history) {
+    playerHist.innerHTML = "";
+    botHist.innerHTML = "";
+    
+    if (!history) return;
+
+    history.forEach(item => {
+        if (!item.guess) return;
+
+        const guesser = item.guesser;
+        const guess = item.guess;
+        const result = item.result !== null ? item.result : '...';
+
+        const html = `<div><span>${guess}</span> → ${result}</div>`;
+
+        if (guesser === playerName) {
+            playerHist.innerHTML += html;
+        } else {
+            botHist.innerHTML += html;
+        }
+    });
+}
+
+function updateOverlay() {
+    const overlay = document.getElementById('waitOverlay');
+    const statusDisplay = document.getElementById('typingStatusDisplay');
+
+    if (!isMultiplayer || roomData.status !== 'playing') {
+        overlay.classList.remove('active');
+        return;
+    }
+
+    const isMyTurn = roomData.turn === playerID;
+
+    if (isMyTurn) {
+        // Jika giliranmu, overlay harus mati kecuali lawan sedang melakukan sesuatu
+        if (roomData.opponentTyping === 'guess' || roomData.opponentTyping === 'feedback') {
+            overlay.classList.add('active');
+            overlay.querySelector('.message').textContent = `${roomData.opponentName} sedang mengetik...`;
+            statusDisplay.textContent = "";
+        } else if (roomData.state === 'feedback_needed' && !isMyTurn) {
+             // Ini harusnya tidak terjadi, tapi sebagai jaga-jaga
+        } else {
+            overlay.classList.remove('active');
+        }
+    } else {
+        // Jika giliran lawan, selalu aktifkan overlay pada layar playerTurn
+        if (currentScreenId === 'playerTurn') {
+            overlay.classList.add('active');
+            let message = "Menunggu giliranmu...";
+
+            if (roomData.opponentTyping === 'guess') {
+                message = `${roomData.opponentName} sedang menebak...`;
+            } else if (roomData.opponentTyping === 'feedback') {
+                message = `${roomData.opponentName} sedang memberikan feedback...`;
+            } else if (roomData.state === 'feedback_needed') {
+                 message = `Giliranmu memberikan feedback ke ${roomData.opponentName}!`;
+            }
+
+            overlay.querySelector('.message').textContent = message;
+            statusDisplay.textContent = ""; 
+        } else {
+            overlay.classList.remove('active');
+        }
+    }
 }
 
 
 // Listener utama untuk sinkronisasi Mabar
 function setupMultiplayerListeners() {
-  // Hapus listener lama jika ada
-  db.ref('rooms/' + roomCode).off('value');
+    // Hapus listener lama jika ada
+    db.ref('rooms/' + roomCode).off('value');
 
-  db.ref('rooms/' + roomCode).on('value', snapshot => {
-    const data = snapshot.val();
-    if (!data || data.status === 'setup' || data.status === 'waiting_join' || data.status === 'ready_to_start') return; 
+    db.ref('rooms/' + roomCode).on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data || data.status === 'setup' || data.status === 'waiting_join' || data.status === 'ready_to_start') return; 
 
-    roomData = {
-      ...data,
-      opponentID: playerID === 1 ? 2 : 1,
-      opponentName: playerID === 1 ? data.player2_name : data.player1_name,
-      opponentSecret: playerID === 1 ? data.player2_secret : data.player1_secret,
-      opponentTyping: playerID === 1 ? data.player2_typing : data.player1_typing,
-    }
+        roomData = {
+            ...data,
+            opponentID: playerID === 1 ? 2 : 1,
+            opponentName: playerID === 1 ? data.player2_name : data.player1_name,
+            opponentSecret: playerID === 1 ? data.player2_secret : data.player1_secret,
+            opponentTyping: playerID === 1 ? data.player2_typing : data.player1_typing,
+        }
 
-    setupRoomContext(); // Update nama lawan di header
+        setupRoomContext(); 
 
-    // 1. Cek Game Ended
-    if (data.status === 'ended') {
-      if (data.winner === playerName) end("Kamu menang! 🎉", true);
-      else if (data.winner) end(`${data.winner} menang! 🤖`, false);
-      else end("Permainan berakhir.", false); // Jika status ended tanpa winner (misal: cleanup)
-      return;
-    }
+        // 1. Cek Game Ended
+        if (data.status === 'ended') {
+            if (data.winner === playerName) end("Kamu menang! 🎉", true);
+            else if (data.winner) end(`${data.winner} menang! 🤖`, false);
+            else end("Permainan berakhir.", false); 
+            return;
+        }
 
-    // 2. Update Riwayat Tebakan
-    updateHistoryDisplay(data.history);
+        // 2. Update Riwayat Tebakan
+        updateHistoryDisplay(data.history);
 
-    // 3. Logika Giliran
-    const isMyTurn = data.turn === playerID;
+        // 3. Logika Giliran
+        const isMyTurn = data.turn === playerID;
 
-    if (isMyTurn) {
-      if (data.state === 'feedback_needed') {
-        // Lawan baru saja menebak, giliranmu memberi feedback
-        showOpponentTurn();
-      } else if (data.state === 'guess_received' || data.state === 'playing') {
-        // Lawan sudah memberi feedback, giliranmu menebak
-        if (data.lastFeedback !== undefined && data.lastFeedback !== null) {
-          // Tampilkan hasil tebakanmu sebelumnya
-          document.getElementById('result').textContent = `Hasil tebakanmu: ${data.lastFeedback}`;
-          // Reset state agar tidak terus menampilkan hasil, beri jeda untuk lihat result
-          setTimeout(() => {
-            updateRoomData({state: 'playing', lastFeedback: null, lastGuess: null});
-            showTurnScreen(true); // Pindah ke giliran menebak
-          }, 1500); // 1.5 detik untuk melihat feedback
-        } else {
-          showTurnScreen(true); // Pindah ke giliran menebak
-        }
-      }
-    } else {
-      // Giliran Lawan
-      // Jika lawan sedang menunggu feedback (artinya saya sudah menebak), tetap di playerTurn (wait overlay aktif)
-      if (data.state === 'feedback_needed') { 
-        show('playerTurn'); 
-      } else {
-        // Lawan sedang menebak, saya menunggu giliran
-        show('playerTurn');
-      }
-      updateOverlay(); // Tampilkan wait overlay
-    }
-  });
-}
-
-function updateHistoryDisplay(history) {
-  playerHist.innerHTML = "";
-  botHist.innerHTML = "";
-  if (history) {
-    for (const record of history) {
-      if (record.result !== null) { // Hanya tampilkan yang sudah ada feedback
-        const html = `<div><span>${record.guess}</span> → ${record.result}</div>`;
-        if (record.guesser === playerName) {
-          playerHist.innerHTML += html;
-        } else {
-          botHist.innerHTML += html;
-        }
-      }
-    }
-  }
-}
-
-function updateOverlay() {
-  if (!isMultiplayer || !roomData) return;
-
-  const overlayPlayer = document.getElementById('mabarWaitOverlay');
-  const overlayBot = document.getElementById('mabarWaitOverlayBot');
-  const playerWaitText = document.getElementById('playerWaitText');
-  const botWaitText = document.getElementById('botWaitText');
-  const isMyTurn = roomData.turn === playerID;
-  const opponentTyping = roomData.opponentTyping;
-
-  // Tentukan layar yang sedang aktif
-  const activeScreenId = document.querySelector('.screen.active').id;
-
-  // Sembunyikan semua overlay secara default
-  overlayPlayer.style.display = 'none';
-  overlayBot.style.display = 'none';
-
-  if (isMyTurn) {
-    // SAYA MENEBAK (PlayerTurn screen)
-    if (activeScreenId === 'playerTurn' && opponentTyping === 'feedback') {
-      // Lawan sedang memberi feedback (ini jarang terjadi karena ada jeda 1.5s, tapi antisipasi)
-      overlayPlayer.style.display = 'flex';
-      playerWaitText.textContent = `${roomData.opponentName} sedang memberi feedback...`;
-    }
-    
-    // SAYA MEMBERI FEEDBACK (BotTurn screen)
-    if (activeScreenId === 'botTurn' && opponentTyping === 'guess') {
-      // Lawan seharusnya tidak mengetik di layar ini
-      overlayBot.style.display = 'flex';
-      botWaitText.textContent = `${roomData.opponentName} sedang mengetik tebakan...`;
-    }
-
-  } else {
-    // GILIRAN LAWAN
-    
-    // SAYA DI LAYAR MENEBAK SAYA (PlayerTurn screen) - Menunggu Giliran Lawan
-    if (activeScreenId === 'playerTurn') {
-      overlayPlayer.style.display = 'flex';
-      if (roomData.state === 'feedback_needed') {
-        playerWaitText.textContent = `Menunggu ${roomData.opponentName} memberi feedback...`;
-      } else if (opponentTyping === 'guess') {
-        playerWaitText.textContent = `${roomData.opponentName} sedang mengetik tebakan...`;
-      } else {
-        playerWaitText.textContent = `Menunggu ${roomData.opponentName} menebak...`;
-      }
-    } 
-    
-    // SAYA DI LAYAR FEEDBACK SAYA (BotTurn screen) - Ini seharusnya tidak terjadi jika turn != playerID
-    if (activeScreenId === 'botTurn') {
-      overlayBot.style.display = 'flex';
-      if (opponentTyping === 'guess') {
-        botWaitText.textContent = `${roomData.opponentName} sedang mengetik tebakan...`;
-      } else {
-        botWaitText.textContent = `Menunggu ${roomData.opponentName} menebak...`;
-      }
-    }
-  }
+        if (isMyTurn) {
+            if (data.state === 'feedback_needed') {
+                // Lawan baru saja menebak, giliranmu memberi feedback
+                showOpponentTurn();
+            } else if (data.state === 'guess_received' || data.state === 'playing') {
+                // Lawan sudah memberi feedback, giliranmu menebak
+                if (data.lastFeedback !== undefined && data.lastFeedback !== null) {
+                    // Tampilkan hasil tebakanmu sebelumnya
+                    document.getElementById('result').textContent = `Hasil tebakanmu: ${data.lastFeedback}`;
+                    
+                    // Reset state setelah jeda 1.5 detik
+                    setTimeout(() => {
+                        updateRoomData({state: 'playing', lastFeedback: null, lastGuess: null});
+                        showTurnScreen(true); 
+                    }, 1500); 
+                } else {
+                    // Pindah giliran menebak tanpa jeda jika tidak ada feedback baru
+                    showTurnScreen(true); 
+                }
+            }
+        } else {
+            // Giliran Lawan
+            // Pindah ke layar tebakanmu dengan overlay tunggu aktif
+            show('playerTurn');
+            updateOverlay(); 
+        }
+    });
 }
 
 
 let currentScreenId = 'welcome';
 const originalShow = show;
 show = function(id) {
-  originalShow(id);
-  currentScreenId = id;
-  if(isMultiplayer && roomData && roomData.status === 'playing') updateOverlay();
+    originalShow(id);
+    currentScreenId = id;
+    if(isMultiplayer && roomData && roomData.status === 'playing') updateOverlay();
 }
 
 
 // Cleanup function: hapus room jika Host keluar
 function cleanupRoom() {
-  if (!roomCode) return;
-  
-  // Matikan semua listener
-  db.ref('rooms/' + roomCode).off('value');
+    if (!roomCode) return;
+    
+    // Matikan semua listener
+    db.ref('rooms/' + roomCode).off('value');
+    if (hostWaitListenerRef) { // Matikan listener tunggu Host
+        db.ref('rooms/' + roomCode).off('value', hostWaitListenerRef);
+        hostWaitListenerRef = null;
+    }
 
-  // Logika penghapusan room
-  if (isMultiplayer && playerID === 1 && roomData && roomData.status !== 'ended') {
-    // Host menghapus room saat keluar
-    db.ref('rooms/' + roomCode).remove().catch(e => console.error("Gagal menghapus room: ", e));
-  } else if (isMultiplayer && playerID === 2 && roomData && roomData.status !== 'ended') {
-    // P2 hanya menonaktifkan listener. Host yang akan melihat room kosong dan menghapusnya, atau status tetap di server.
-    // Atau, P2 bisa mengirim sinyal 'disconnected'
-    db.ref('rooms/' + roomCode).update({
-      status: 'ended', 
-      winner: roomData.player1_name || "Host",
-      disconnection: roomData.player2_name || "Pemain 2"
-    });
-  }
-  
-  isMultiplayer = false;
-  roomCode = "";
-  playerID = null;
-  roomData = null;
-  sessionStorage.removeItem('currentRoomCode');
+    // Logika penghapusan room
+    if (isMultiplayer && playerID === 1 && roomData && roomData.status !== 'ended') {
+        // Host menghapus room saat keluar
+        db.ref('rooms/' + roomCode).remove().catch(e => console.error("Gagal menghapus room: ", e));
+    } else if (isMultiplayer && playerID === 2 && roomData && roomData.status !== 'ended') {
+        // P2 mengirim sinyal 'disconnection'
+        db.ref('rooms/' + roomCode).update({
+            status: 'ended', 
+            winner: roomData.player1_name || "Host",
+            disconnection: roomData.player2_name || "Pemain 2"
+        });
+    }
+    
+    isMultiplayer = false;
+    roomCode = "";
+    playerID = null;
+    roomData = null;
+    sessionStorage.removeItem('currentRoomCode');
 }
 window.onbeforeunload = cleanupRoom;
 
 </script>
+
 </body>
 </html>
