@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Tebak 4 Angka — vs Bot</title>
+<title>Tebak 4 Angka — vs Bot & Mabar</title>
 <style>
 /* ===== CSS utama ===== */
 body {
@@ -60,7 +60,6 @@ button:hover { background: #ff5d8a; transform: scale(1.05); }
   background: #ff5d8a; color: white; border-radius: 8px; padding: 6px 10px;
   font-size: 12px; cursor: pointer; }
 
-/* Lightbox popup tengah */
 #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(255, 240, 245, 0.3); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 999; }
 #lightbox img { width: 320px; max-width: 90%; border-radius: 16px; border: 4px solid #ff7aa2;
@@ -80,7 +79,6 @@ button:hover { background: #ff5d8a; transform: scale(1.05); }
 
 .btn-row { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
 
-/* ===== Switch pojok kiri atas ===== */
 #topSwitches { position: fixed; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
 .switch { position: relative; display: inline-block; width: 60px; height: 28px; }
 .switch input { display: none; }
@@ -96,7 +94,6 @@ input:checked + .slider:before { transform: translateX(32px); content: "☀️";
 .slider.music:before { content: "🎵"; }
 input:checked + .slider.music:before { content: "🔊"; }
 
-/* Mode gelap */
 body.dark { background: linear-gradient(135deg, #2b002b, #4a004a); color: #f8d8e8; }
 body.dark .screen { background: #3a003a; color: #f8d8e8; box-shadow: 0 6px 15px rgba(0,0,0,0.4); }
 body.dark button { background: #a34a78; color: white; }
@@ -133,7 +130,8 @@ body.dark .rules { background: #4a004a; color: #ffe6f0; }
   <input id="secret" type="text" maxlength="4" placeholder="Angka Kamu"><br>
   <div class="btn-row">
     <button onclick="showHistoryScreen()">📜 Riwayat</button>
-    <button onclick="startGame()">Mulai Game ▶️</button>
+    <button onclick="startGame()">🎯 Vs Bot</button>
+    <button onclick="show('onlineMenu')">🌐 Main Online (Mabar)</button>
   </div>
   <div class="rules">
     <h2>📜 Peraturan & Petunjuk:</h2>
@@ -153,14 +151,48 @@ body.dark .rules { background: #4a004a; color: #ffe6f0; }
 <!-- Layar riwayat -->
 <div id="historyScreen" class="screen">
   <h1>📜 Riwayat Permainan</h1>
+  <h2 style="color:#b30057; text-align:center; margin-bottom:10px;">🚧 COMING SOON 🚧</h2>
   <div id="historyList"></div>
+  <button onclick="show('welcome')">⬅️ Kembali</button>
+</div>
+
+<!-- ===== Layar Mabar Online ===== -->
+<div id="onlineMenu" class="screen">
+  <h1>🌐 Main Online (Mabar)</h1>
+
+  <div class="rules">
+    <p>Pilih salah satu:</p>
+    <ul>
+      <li><b>Make Room</b> untuk membuat ruang baru (kamu jadi host).</li>
+      <li><b>Join Room</b> untuk bergabung ke ruang teman.</li>
+    </ul>
+  </div>
+
+  <!-- Bagian Make Room -->
+  <div style="margin-top:20px; background:#fff6f9; border-radius:10px; padding:16px;">
+    <h2>👑 Make Room</h2>
+    <p>Kode Room kamu:</p>
+    <div id="roomCode" style="font-size:22px; font-weight:bold; color:#b30057; margin:10px;">-----</div>
+    <button onclick="generateRoomCode()">🔑 Generate Room</button>
+    <br><br>
+    <button onclick="goToOnlineSetup(true)">Start ▶️</button>
+  </div>
+
+  <!-- Bagian Join Room -->
+  <div style="margin-top:24px; background:#fff6f9; border-radius:10px; padding:16px;">
+    <h2>🤝 Join Room</h2>
+    <input id="joinCode" type="text" maxlength="5" placeholder="Masukkan kode room"><br>
+    <button onclick="goToOnlineSetup(false)">Start ▶️</button>
+  </div>
+
+  <br>
   <button onclick="show('welcome')">⬅️ Kembali</button>
 </div>
 
 <!-- Layar pemain -->
 <div id="playerTurn" class="screen">
   <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
-  <h1>Tebak Angka Bot 🎯</h1>
+  <h1 id="playerTurnTitle">Tebak Angka</h1>
   <div class="guess-grid">
     <input id="g1" maxlength="1">
     <input id="g2" maxlength="1">
@@ -174,17 +206,17 @@ body.dark .rules { background: #4a004a; color: #ffe6f0; }
   <div class="history" id="playerHistory"></div>
 </div>
 
-<!-- Layar bot -->
+<!-- Layar bot / waiting (dipakai juga untuk menunggu giliran lawan saat online) -->
 <div id="botTurn" class="screen" style="background:linear-gradient(135deg,#ffe6f0,#d2b48c);">
   <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
-  <h1>Giliran Bot 🔮</h1>
+  <h1 id="botTurnTitle">Giliran Lawan</h1>
   <p>Angka rahasiamu:</p>
   <div id="playerSecretTable" class="table-secret"></div>
   <div class="bot-box" id="botGuess">----</div>
-  <p>Beri tahu bot berapa angka yang benar:</p>
+  <p id="feedbackPrompt">Beri tahu berapa angka yang benar:</p>
   <div id="feedbackArea"></div>
   <button id="nextTurnBtn" style="display:none;" onclick="nextTurn()">Sudah ✅</button>
-  <h3>Riwayat Tebakan Bot:</h3>
+  <h3>Riwayat Tebakan Bot / Lawan:</h3>
   <div class="history" id="botHistory"></div>
 </div>
 
@@ -230,7 +262,7 @@ body.dark .rules { background: #4a004a; color: #ffe6f0; }
 </div>
 
 <script>
-/* ===== Script game & switch ===== */
+/* ===== Script game & switch (existing) ===== */
 function openLightbox(img){document.getElementById('lightboxImg').src=img.src;document.getElementById('lightbox').style.display='flex';}
 function toggleDarkMode(){document.body.classList.toggle("dark");}
 function toggleMusic(){const audio=document.getElementById("bgMusic");if(document.getElementById("musicToggle").checked) audio.play();else audio.pause();}
@@ -325,5 +357,276 @@ guessInputs.forEach((input, idx) => {
   });
 });
 </script>
+
+<!-- ===== Firebase + Mabar Online (module) ===== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getDatabase, ref, set, get, update, onValue, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+  // Konfigurasi Firebase (dari kamu)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCqgr3gYyc4oFg69xphOWPctvzgCisyL-I",
+    authDomain: "game-tebak-angka-2025.firebaseapp.com",
+    projectId: "game-tebak-angka-2025",
+    storageBucket: "game-tebak-angka-2025.firebasestorage.app",
+    messagingSenderId: "776244941517",
+    appId: "1:776244941517:web:d9655d10c9532391084f84",
+    measurementId: "G-S6NMHPNG7K"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
+
+  // login anonim otomatis
+  signInAnonymously(auth).catch(e => console.error("Anon sign-in failed:",e));
+  onAuthStateChanged(auth, user => {
+    if(user) console.log("Signed in anon:", user.uid);
+  });
+
+  // helper buat kode room
+  function makeRoomCode(){ return Math.random().toString(36).substring(2,7).toUpperCase(); }
+  function setRoomCodeUI(code){ document.getElementById('roomCode').textContent = code; }
+
+  // expose for UI
+  window.generateRoomCode = function(){ setRoomCodeUI(makeRoomCode()); }
+
+  // goToOnlineSetup dipanggil dari UI: isHost boolean
+  window.goToOnlineSetup = function(isHost){
+    let code;
+    if(isHost){
+      code = document.getElementById('roomCode').textContent;
+      if(code === "-----") return error("Buat kode room dulu!");
+    } else {
+      code = document.getElementById('joinCode').value.trim().toUpperCase();
+      if(code.length < 3) return error("Masukkan kode room yang benar!");
+    }
+    sessionStorage.setItem("roomCode", code);
+    sessionStorage.setItem("isHost", isHost ? "true" : "false");
+    showOnlineSetup();
+  }
+
+  window.showOnlineSetup = function(){
+    // buat layar setup jika belum ada
+    if(!document.getElementById('onlineSetup')){
+      document.body.insertAdjacentHTML("beforeend", `
+        <div id="onlineSetup" class="screen active">
+          <h1>🔢 Siapkan Dirimu (Online)</h1>
+          <p>Room: <b id="onlineRoomDisplay">${sessionStorage.getItem('roomCode') || ''}</b></p>
+          <input id="onlineName" type="text" placeholder="Nama Pemain"><br>
+          <input id="onlineSecret" type="text" maxlength="4" placeholder="Angka Rahasia"><br>
+          <p id="status" style="font-size:14px;color:#5a2c2c;margin-top:8px;"></p>
+          <div class="btn-row">
+            <button onclick="startOnlineGame()">Mulai ▶️</button>
+            <button onclick="cancelOnlineSetup()">Batal</button>
+          </div>
+        </div>
+      `);
+    } else {
+      document.getElementById('onlineRoomDisplay').textContent = sessionStorage.getItem('roomCode');
+      show('onlineSetup');
+    }
+  }
+
+  window.cancelOnlineSetup = function(){
+    show('onlineMenu');
+    const el = document.getElementById('onlineSetup');
+    if(el) el.remove();
+  }
+
+  // create room in DB
+  async function createRoomOnFirebase(roomCode, playerName, secret){
+    const roomRef = ref(db, 'rooms/' + roomCode);
+    await set(roomRef, {
+      host: { uid: auth.currentUser.uid, name: playerName, secret: secret },
+      guest: null,
+      state: 'waiting',
+      turn: 'host',
+      createdAt: serverTimestamp()
+    });
+    listenRoom(roomCode);
+  }
+
+  // join room
+  async function joinRoomOnFirebase(roomCode, playerName, secret){
+    const roomRef = ref(db, 'rooms/' + roomCode);
+    const snap = await get(roomRef);
+    if(!snap.exists()) throw new Error("Room tidak ditemukan.");
+    const data = snap.val();
+    if(data.guest) throw new Error("Room sudah penuh.");
+    await update(roomRef, {
+      guest: { uid: auth.currentUser.uid, name: playerName, secret: secret },
+      state: 'playing'
+    });
+    listenRoom(roomCode);
+  }
+
+  // listen room updates
+  let roomUnsub = null;
+  function listenRoom(roomCode){
+    const rref = ref(db, 'rooms/' + roomCode);
+    if(roomUnsub) roomUnsub(); // not available directly; onValue returns function? We'll store callback anyway
+    // onValue returns unsubscribe function in v11? It returns function to detach. We'll store it.
+    const off = onValue(rref, (snap) => {
+      const room = snap.val();
+      roomUpdateHandler(room, roomCode);
+    });
+    roomUnsub = () => off();
+  }
+
+  // startOnlineGame called after filling name & secret on online setup
+  window.startOnlineGame = async function(){
+    const name = document.getElementById('onlineName').value.trim();
+    const sec = document.getElementById('onlineSecret').value.trim();
+    const code = sessionStorage.getItem('roomCode');
+    const isHost = sessionStorage.getItem('isHost') === "true";
+
+    if(!name) return error("Nama tidak boleh kosong!");
+    if(!/^[1-9]{4}$/.test(sec) || new Set(sec).size!==4) return error("Angka rahasia harus 4 angka unik (1–9)!");
+
+    try {
+      if(isHost){
+        await createRoomOnFirebase(code, name, sec);
+        alert("Room dibuat. Kode: " + code + "\nTunggu pemain lain bergabung.");
+      } else {
+        await joinRoomOnFirebase(code, name, sec);
+        alert("Berhasil bergabung ke Room: " + code);
+      }
+      // simpan info lokal
+      sessionStorage.setItem('onlineName', name);
+      sessionStorage.setItem('onlineSecret', sec);
+      sessionStorage.setItem('onlineRoom', code);
+      // show playerTurn (UI will be updated by listener)
+      // set playerNameDisplay
+      document.getElementById('playerNameDisplay').textContent = "👤 " + name;
+    } catch(e){
+      error(e.message || "Gagal membuat/bergabung room.");
+      return;
+    }
+  }
+
+  // handle room updates
+  async function roomUpdateHandler(room, code){
+    if(!room) {
+      error("Room telah dibubarkan.");
+      return;
+    }
+    const isHost = sessionStorage.getItem('isHost') === "true";
+    const myRole = isHost ? 'host' : 'guest';
+    // Update histories UI
+    const ph = document.getElementById('playerHistory');
+    const bh = document.getElementById('botHistory');
+    if(ph && bh){
+      ph.innerHTML = "";
+      bh.innerHTML = "";
+      if(room.hostHistory) Object.values(room.hostHistory).forEach(it => ph.innerHTML += `<div><span>${it.guess}</span> → ${it.result}</div>`);
+      if(room.guestHistory) Object.values(room.guestHistory).forEach(it => bh.innerHTML += `<div><span>${it.guess}</span> → ${it.result}</div>`);
+    }
+
+    // state transitions
+    if(room.state === 'waiting'){
+      // waiting for guest
+      document.getElementById('status')?.innerText = "Menunggu pemain bergabung...";
+      show('onlineSetup');
+    } else if(room.state === 'playing'){
+      // determine whose turn
+      const turnOwner = room.turn; // 'host' or 'guest'
+      const myName = sessionStorage.getItem('onlineName') || (isHost ? room.host?.name : room.guest?.name);
+      const oppName = isHost ? room.guest?.name : room.host?.name;
+
+      // update secret table - show my secret only
+      const tbl = document.getElementById('playerSecretTable');
+      if(tbl){
+        tbl.innerHTML = "";
+        // show my secret in table only if set
+        const mySecret = isHost ? room.host?.secret : room.guest?.secret;
+        const secretToShow = mySecret ? mySecret : "????";
+        for(let ch of secretToShow){ const cell=document.createElement('div'); cell.textContent=ch; tbl.appendChild(cell); }
+      }
+
+      // if it's my turn -> show playerTurn UI
+      if(turnOwner === myRole){
+        document.getElementById('playerTurnTitle').textContent = `Giliranmu — Tebak ${oppName || 'Lawan'}`;
+        show('playerTurn');
+      } else {
+        // show waiting screen with opponent guess box
+        document.getElementById('botTurnTitle').textContent = `Giliran ${oppName || 'Lawan'}`;
+        document.getElementById('botGuess').textContent = "Menunggu...";
+        // feedbackArea used only for vs bot; for online we show waiting text
+        document.getElementById('feedbackArea').innerHTML = `<div style="padding:8px;">Tunggu sampai lawan mengirim tebakan...</div>`;
+        show('botTurn');
+      }
+    } else if(room.state === 'ended'){
+      const winner = room.winner;
+      const winnerName = winner === 'host' ? room.host?.name : room.guest?.name;
+      endOnlineGame(`${winnerName} menang!`, room);
+      // cleanup optional
+    }
+  }
+
+  // submitGuessOnline API
+  window.submitGuessOnline = async function(guessStr){
+    const code = sessionStorage.getItem('onlineRoom') || sessionStorage.getItem('roomCode');
+    const isHost = sessionStorage.getItem('isHost') === "true";
+    const role = isHost ? 'host' : 'guest';
+    if(!isValid(guessStr)) return error("Tebakan harus 4 angka unik (1–9)!");
+    const roomSnap = await get(ref(db, 'rooms/' + code));
+    if(!roomSnap.exists()) return error("Room tidak ditemukan.");
+    const room = roomSnap.val();
+    const opponentSecret = (role === 'host') ? room.guest?.secret : room.host?.secret;
+    if(!opponentSecret) return error("Belum ada lawan atau lawan belum mengisi secret.");
+
+    // local match
+    function matchLocal(a,b){let c=0; for(let i=0;i<4;i++) if(a[i]===b[i]) c++; return c;}
+    const result = matchLocal(guessStr, opponentSecret);
+
+    // push history
+    const histPath = role === 'host' ? 'rooms/' + code + '/hostHistory' : 'rooms/' + code + '/guestHistory';
+    const newRef = push(ref(db, histPath));
+    await set(newRef, { guess: guessStr, result: result, ts: serverTimestamp() });
+
+    // if win
+    const roomRef = ref(db, 'rooms/' + code);
+    if(result === 4){
+      await update(roomRef, { state: 'ended', winner: role });
+    } else {
+      // change turn
+      const next = role === 'host' ? 'guest' : 'host';
+      await update(roomRef, { turn: next });
+    }
+  }
+
+  // override submitGuess to route to online when in onlineRoom
+  const origSubmitGuess = window.submitGuess;
+  window.submitGuess = function(){
+    const g = [g1.value,g2.value,g3.value,g4.value].join('');
+    const isOnline = sessionStorage.getItem('onlineRoom');
+    if(isOnline){
+      submitGuessOnline(g);
+      clearGuess();
+      return;
+    }
+    origSubmitGuess();
+  }
+
+  // end online game UI
+  function endOnlineGame(msg, room){
+    const isHost = sessionStorage.getItem('isHost') === "true";
+    const winnerIsHost = room && room.winner === 'host';
+    const win = (isHost && winnerIsHost) || (!isHost && !winnerIsHost);
+    end(msg + " (Online)", win);
+  }
+  window.endOnlineGame = endOnlineGame;
+
+  // optional cleanup
+  window.cleanupRoom = async function(roomCode){
+    try { await remove(ref(db, 'rooms/' + roomCode)); } catch(e){ console.warn(e); }
+  }
+
+  // expose some functions for debug
+  window._firebase = { db, auth };
+</script>
+
 </body>
 </html>
