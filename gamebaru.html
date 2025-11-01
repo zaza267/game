@@ -70,7 +70,7 @@ body.dark .rules { background: #4a004a; color: #ffe6f0; }
 </div>
 
 <!-- Audio Musik -->
-<audio id="bgMusic" src="Kasih Putih (Acoustic).mp3" loop></audio>
+<audio id="bgMusic" src="assets/Kasih Putih (Acoustic).mp3" loop></audio>
 
 <!-- Nama pemain -->
 <div id="playerNameDisplay"></div>
@@ -83,14 +83,14 @@ body.dark .rules { background: #4a004a; color: #ffe6f0; }
   <input id="secret" type="text" maxlength="4" placeholder="Angka Kamu"><br>
   <div class="btn-row">
     <button onclick="showHistoryScreen()">📜 Riwayat</button>
-    <button onclick="startGame()">Mulai Game ▶️</button>
-    <button onclick="show('mabarScreen')">🎮 Mabar</button>
+    <button onclick="startGameVsBot()">Mulai vs Bot ▶️</button>
+    <button onclick="showMabarScreen()">🎮 Mabar</button>
   </div>
   <div class="rules">
     <h2>📜 Peraturan & Petunjuk:</h2>
     <ul>
       <li>Gunakan angka <b>1–9</b> (tidak boleh 0 dan tidak boleh ganda).</li>
-      <li>Pemain dan bot bergantian menebak angka satu sama lain.</li>
+      <li>Pemain dan bot / teman bergantian menebak angka satu sama lain.</li>
       <li>Jika hasil <b>4</b>, maka pemain yang menebak <b>MENANG!</b> 🎉</li>
     </ul>
   </div>
@@ -98,128 +98,73 @@ body.dark .rules { background: #4a004a; color: #ffe6f0; }
 
 <!-- ===== Layar Mabar ===== -->
 <div id="mabarScreen" class="screen">
-  <h1>🎮 Mode Mabar</h1>
-  <div id="hostSection">
-    <h2>Host Game</h2>
-    <button onclick="generateRoom()">🔑 Generate Room</button>
+  <h1>🎮 Mode Mabar Online</h1>
+  <div id="mabarHost" style="margin-bottom:14px;">
+    <h3>Host</h3>
+    <button onclick="generateRoom()">Generate Room</button>
     <p>Kode Room: <span id="roomCode">-</span></p>
-    <p id="hostStatus">Menunggu pemain lain...</p>
   </div>
-  <hr>
-  <div id="joinSection">
-    <h2>Join Party</h2>
-    <input type="text" id="joinRoomCode" placeholder="Masukkan Kode Room">
+  <div id="mabarJoin">
+    <h3>Join Party</h3>
+    <input id="joinCode" placeholder="Masukkan kode teman"><br>
     <button onclick="joinRoom()">Join</button>
-    <p id="joinStatus"></p>
   </div>
-  <div class="btn-row">
-    <button onclick="show('welcome')">⬅️ Kembali</button>
-    <button id="startMabarBtn" style="display:none;" onclick="startMabar()">Mulai Game</button>
-  </div>
+  <button id="mabarStartBtn" style="display:none;" onclick="startMabarGame()">Mulai Game ▶️</button>
+  <button onclick="show('welcome')">⬅️ Kembali</button>
 </div>
 
-<!-- Lightbox -->
-<div id="lightbox" onclick="this.style.display='none'">
-  <img id="lightboxImg" src="">
-</div>
-
-<!-- Layar lainnya (playerTurn, botTurn, cheatScreen, surrenderScreen, endScreen, errorScreen) -->
-<!-- Gunakan layout & script yang sudah ada di versi lawan bot sebelumnya -->
+<!-- ==== Sisanya (playerTurn, botTurn, cheatScreen, surrenderScreen, endScreen, errorScreen) ==== -->
+<!-- ... Copy semua layar & struktur HTML seperti versi sebelumnya ... -->
+<!-- Jangan lupa ganti semua path foto ke folder assets/ -->
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+// ===== Firebase =====
+import { app, db } from './firebase.js';
+import { ref, set, onValue, update, get, child } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyCqgr3gYyc4oFg69xphOWPctvzgCisyL-I",
-  authDomain: "game-tebak-angka-2025.firebaseapp.com",
-  databaseURL: "https://game-tebak-angka-2025-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "game-tebak-angka-2025",
-  storageBucket: "game-tebak-angka-2025.appspot.com",
-  messagingSenderId: "776244941517",
-  appId: "1:776244941517:web:d9655d10c9532391084f84",
-  measurementId: "G-S6NMHPNG7K"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ===== Script utama game =====
-let playerSecret = "", botSecret = "", playerName = "";
-let currentRoom = "", isHost = false;
-
-// === Helper functions ===
+/* ===== Dark Mode & Musik ===== */
 function toggleDarkMode(){document.body.classList.toggle("dark");}
 function toggleMusic(){const audio=document.getElementById("bgMusic");document.getElementById("musicToggle").checked ? audio.play() : audio.pause();}
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active');}
-function isValid(s){ return /^[1-9]{4}$/.test(s) && new Set(s).size===4; }
-function error(msg){alert(msg);} // Sementara, bisa pakai layar error versi lama
 
-// Generate semua kombinasi 4 angka unik
-const all = [];
-(function gen() {
-  const d = ['1','2','3','4','5','6','7','8','9'];
-  function back(c) { if(c.length===4){ all.push(c.join('')); return; } for(const x of d) if(!c.includes(x)){ c.push(x); back(c); c.pop(); } }
-  back([]);
-})();
+/* ===== Versi vs Bot ===== */
+// ... copy semua script vs Bot dari versi HTML sebelumnya ...
 
-// ===== Mabar =====
+/* ===== Versi Mabar Online ===== */
+let isHost=false, roomId="", mabarPlayerSecret="", mabarOpponentSecret="", playerNameMabar="";
+function showMabarScreen(){show('mabarScreen');}
 function generateRoom(){
-  currentRoom = Math.random().toString(36).substring(2,6).toUpperCase();
-  document.getElementById('roomCode').textContent = currentRoom;
-  isHost = true;
-  set(ref(db,'rooms/'+currentRoom),{
-    host: playerName || "Host",
-    hostSecret: playerSecret || "",
-    turn: "host"
+  isHost=true; roomId=Math.random().toString(36).substring(2,6).toUpperCase();
+  document.getElementById('roomCode').textContent = roomId;
+  mabarPlayerSecret = document.getElementById('secret').value.trim();
+  playerNameMabar = document.getElementById('name').value.trim();
+  set(ref(db,'rooms/'+roomId),{
+    host: {name:playerNameMabar, secret:mabarPlayerSecret, guess:'', history:[], status:'waiting'},
+    guest: null
   });
-  const roomRef = ref(db,'rooms/'+currentRoom+'/guest');
-  onValue(roomRef,(snap)=>{
-    if(snap.exists()){
-      document.getElementById('hostStatus').textContent = `🎉 ${snap.val()} sudah bergabung!`;
-      document.getElementById('startMabarBtn').style.display='inline-block';
-    }
-  });
+  document.getElementById('mabarStartBtn').style.display='inline-block';
 }
-
 function joinRoom(){
-  const code = document.getElementById('joinRoomCode').value.trim().toUpperCase();
-  if(!code) return alert("Masukkan kode room!");
-  const roomRef = ref(db,'rooms/'+code);
-  onValue(roomRef,(snap)=>{
-    if(snap.exists()){
-      currentRoom = code;
-      isHost = false;
-      update(ref(db,'rooms/'+code),{ guest: playerName, guestSecret: playerSecret });
-      document.getElementById('joinStatus').textContent = `Bergabung dengan host: ${snap.val().host}`;
-      document.getElementById('startMabarBtn').style.display='inline-block';
-    } else {
-      document.getElementById('joinStatus').textContent = "Room tidak ditemukan!";
-    }
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  const guestSecret = document.getElementById('secret').value.trim();
+  const guestName = document.getElementById('name').value.trim();
+  if(!code) return alert('Masukkan kode room!');
+  set(ref(db,'rooms/'+code+'/guest'),{
+    name: guestName, secret: guestSecret, guess:'', history:[]
   });
+  roomId = code; startMabarGame();
 }
-
-function startMabar(){
+function startMabarGame(){
   show('playerTurn');
-  listenTurn();
-}
-
-function listenTurn(){
-  const roomRef = ref(db,'rooms/'+currentRoom);
-  onValue(roomRef,(snap)=>{
-    const data = snap.val();
-    if(!data) return;
-    const turn = data.turn;
-    if((turn==='host' && isHost) || (turn==='guest' && !isHost)){
-      document.getElementById('result').textContent="Giliranmu menebak!";
-    } else {
-      document.getElementById('result').textContent="Menunggu lawan...";
-    }
+  // Tambahkan listener realtime Firebase untuk update tebakan & feedback lawan
+  const roomRef = ref(db,'rooms/'+roomId);
+  onValue(roomRef,(snapshot)=>{
+    const room = snapshot.val();
+    if(!room) return;
+    if(isHost && room.guest) mabarOpponentSecret = room.guest.secret;
+    if(!isHost && room.host) mabarOpponentSecret = room.host.secret;
+    // Update UI sesuai status, tebakan lawan, menang/kalah/curang/menyerah
   });
 }
-
 </script>
 </body>
 </html>
