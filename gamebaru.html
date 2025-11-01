@@ -3,150 +3,187 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Tebak 4 Angka — Hybrid Bot & Multiplayer</title>
+<title>Tebak 4 Angka — Mabar Realtime 💖</title>
 <style>
-/* CSS sama persis dengan versi bot sebelumnya (dark mode, lightbox, tombol, history...) */
-body { font-family: "Poppins", sans-serif; background: linear-gradient(135deg,#ffe6f0,#ffd7e5); display:flex;align-items:center;justify-content:center;height:100vh;margin:0; }
-/* ...salin semua style sebelumnya... */
+body { font-family: "Poppins", sans-serif; text-align:center; background:#fff; color:#333; transition:.3s; }
+.dark { background:#1a1a1a; color:#fff; }
+h1 { color:#ff66a3; margin-top:20px; }
+button { background:#ff66a3; color:#fff; border:none; padding:10px 20px; margin:6px; border-radius:10px; cursor:pointer; font-weight:bold; transition:.3s; }
+button:hover{ transform:scale(1.05);}
+input{ padding:10px; margin:10px; border:2px solid #ff66a3; border-radius:8px; width:200px; font-size:16px;}
+#feedback-box{ display:flex; justify-content:center; gap:8px; margin-top:15px;}
+.feedback-btn{ width:40px; height:40px; background:#ffb6c1; border:none; border-radius:8px; font-size:18px; cursor:pointer;}
+.feedback-btn:hover{ background:#ff99bb;}
+#announcement{ background:#ffcce0; padding:10px; border-radius:10px; margin:10px auto; width:90%; display:none;}
 </style>
 </head>
 <body>
 
-<!-- Switch, audio, lightbox, screens -->
-<div id="topSwitches">...</div>
-<audio id="bgMusic" src="Kasih Putih (Acoustic).mp3" loop></audio>
-<div id="lightbox" onclick="this.style.display='none'"><img id="lightboxImg"></div>
+<h1>🎮 Tebak 4 Angka — Mabar Realtime 💖</h1>
 
-<div id="welcome" class="screen active">
-  <h1>🎮 Tebak 4 Angka — Hybrid 🎀</h1>
-  <p>Nama & angka rahasiamu</p>
-  <input id="name" type="text" placeholder="Nama Pemain"><br>
-  <input id="secret" type="text" maxlength="4" placeholder="Angka Rahasiamu"><br>
-  <input id="roomCode" type="text" placeholder="Kode Room (kosong untuk bot)"><br>
-  <div class="btn-row">
-    <button onclick="start()">Mulai ▶️</button>
+<button id="darkToggle">🌙 Dark Mode</button>
+<button id="musicToggle">🎵 Musik</button>
+<audio id="bgMusic" src="kasih_putih.mp3" loop></audio>
+
+<div id="announcement"></div>
+
+<div id="lobby">
+  <input id="name" placeholder="Nama Kamu"><br>
+  <button id="createRoom">🔑 Buat Room</button><br><br>
+  <input id="roomCodeInput" placeholder="Kode Room..."><br>
+  <button id="joinRoom">➡️ Join Room</button>
+</div>
+
+<div id="game" style="display:none;">
+  <h3>Room: <span id="roomCodeDisplay"></span></h3>
+  <div id="log"></div>
+  <input id="guessInput" maxlength="4" placeholder="Tebak 4 angka unik 1–9">
+  <button id="sendGuess">Kirim Tebakan</button>
+  <button id="surrenderBtn">😢 Menyerah</button>
+  <div id="feedback-box">
+    <button class="feedback-btn">0</button>
+    <button class="feedback-btn">1</button>
+    <button class="feedback-btn">2</button>
+    <button class="feedback-btn">3</button>
+    <button class="feedback-btn">4</button>
   </div>
 </div>
 
-<div id="playerTurn" class="screen">...</div>
-<div id="opponentTurn" class="screen">...</div>
-<div id="endScreen" class="screen">...</div>
-<div id="errorScreen" class="screen">...</div>
+<script type="module">
+// === Firebase ===
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<script>
-/* ===== Firebase config ===== */
 const firebaseConfig = {
-  apiKey: "API_KEY_HERE",
-  authDomain: "PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://PROJECT_ID.firebaseio.com",
-  projectId: "PROJECT_ID"
+  apiKey: "AIzaSyCqgr3gYyc4oFg69xphOWPctvzgCisyL-I",
+  authDomain: "game-tebak-angka-2025.firebaseapp.com",
+  databaseURL: "https://game-tebak-angka-2025-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "game-tebak-angka-2025",
+  storageBucket: "game-tebak-angka-2025.firebasestorage.app",
+  messagingSenderId: "776244941517",
+  appId: "1:776244941517:web:d9655d10c9532391084f84",
+  measurementId: "G-S6NMHPNG7K"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 
-/* ===== Game State ===== */
-let playerName="", playerSecret="", roomCode="", isBot=false, currentPlayer=1;
-const playerHist=document.getElementById('playerHistory');
-const opponentHist=document.getElementById('opponentHistory');
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-/* ===== Validasi ===== */
-function isValid(s){return /^[1-9]{4}$/.test(s)&&new Set(s).size===4;}
-function match(a,b){let c=0;for(let i=0;i<4;i++)if(a[i]===b[i])c++;return c;}
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function error(msg){document.getElementById('errorMsg').textContent=msg;show('errorScreen');}
-function closeError(){show('welcome');}
+// === DOM ===
+const logDiv = document.getElementById('log');
+const roomCodeDisplay = document.getElementById('roomCodeDisplay');
+const annBox = document.getElementById('announcement');
+const guessInput = document.getElementById('guessInput');
+const sendGuess = document.getElementById('sendGuess');
+const surrenderBtn = document.getElementById('surrenderBtn');
+const feedbackBtns = document.querySelectorAll('.feedback-btn');
+const gameDiv = document.getElementById('game');
+const lobbyDiv = document.getElementById('lobby');
 
-/* ===== Mulai Game (Bot / Multiplayer) ===== */
-function start(){
-  const n=document.getElementById('name').value.trim();
-  const sec=document.getElementById('secret').value.trim();
-  const room=document.getElementById('roomCode').value.trim();
-  if(!n||!isValid(sec)) return error("Nama/angka rahasia tidak valid!");
-  playerName=n; playerSecret=sec;
+const nameInput = document.getElementById('name');
+const createBtn = document.getElementById('createRoom');
+const joinBtn = document.getElementById('joinRoom');
+const roomInput = document.getElementById('roomCodeInput');
 
-  if(!room){ // Mode Bot
-    isBot=true; startBotGame();
-  }else{ // Mode Multiplayer
-    roomCode=room.toUpperCase();
-    isBot=false; joinRoom();
+let playerName = "";
+let currentRoom = null;
+let playerSecret = "";
+
+// === Utils ===
+function showAnnounce(msg){
+  annBox.textContent = msg;
+  annBox.style.display = "block";
+  setTimeout(()=>{ annBox.style.display="none"; },4000);
+}
+function log(msg){ logDiv.innerHTML += `<div>${msg}</div>`; }
+
+// === DARK MODE & MUSIC ===
+const darkToggle = document.getElementById("darkToggle");
+const musicToggle = document.getElementById("musicToggle");
+const bgMusic = document.getElementById("bgMusic");
+darkToggle.onclick = ()=>document.body.classList.toggle("dark");
+musicToggle.onclick = ()=>{ bgMusic.paused?bgMusic.play():bgMusic.pause(); };
+
+// === ROOM ===
+function generateSecret(){
+  const digits = ['1','2','3','4','5','6','7','8','9'];
+  let s = "";
+  while(s.length<4){
+    const d = digits[Math.floor(Math.random()*digits.length)];
+    if(!s.includes(d)) s+=d;
   }
+  return s;
 }
 
-/* ===== MODE BOT ===== */
-let botSecret="", possible=[], botLast="";
-function startBotGame(){
-  const all=[];
-  (function gen(){const d='123456789'.split('');function back(c){if(c.length===4){all.push(c.join(''));return;}for(const x of d)if(!c.includes(x)){c.push(x);back(c);c.pop();}}back([]);})();
-  botSecret=all[Math.floor(Math.random()*all.length)];
-  possible=[...all];
-  document.getElementById('turnTitle').textContent=`Giliran ${playerName} menebak`;
-  show('playerTurn'); g1.focus();
-}
-
-/* Tebakan Player Bot */
-function submitGuess(){ 
-  const g=[g1.value,g2.value,g3.value,g4.value].join('');
-  if(!isValid(g)) return error("Tebakan salah!");
-  const m=isBot?match(g,botSecret):null;
-  if(isBot){
-    playerHist.innerHTML+=`<div><span>${g}</span> → ${m}</div>`;
-    if(m===4){ end("Kamu menang! 🎉"); return; }
-    show('opponentTurn'); // bisa diganti logika bot menebak otomatis nanti
-  }else{
-    sendGuess(g); // Multiplayer
-  }
-}
-
-/* ===== MODE MULTIPLAYER ===== */
-function joinRoom(){
-  const roomRef=db.ref('rooms/'+roomCode);
-  roomRef.once('value',snap=>{
-    if(!snap.exists()){ // buat room baru
-      roomRef.set({player1:{name:playerName, secret:playerSecret}, player2:null, turn:1, history:[]});
-      alert("Room dibuat, tunggu teman bergabung");
-    }else{
-      const data=snap.val();
-      if(!data.player2){roomRef.update({player2:{name:playerName, secret:playerSecret}}); alert("Bergabung dengan room");}
-      else return error("Room penuh!");
-    }
-    listenRoom();
+// Create room
+createBtn.onclick = async ()=>{
+  if(!nameInput.value) return alert("Masukkan nama!");
+  playerName = nameInput.value;
+  const code = Math.floor(1000+Math.random()*9000);
+  playerSecret = generateSecret();
+  await set(ref(db,"rooms/"+code),{
+    status:"waiting",
+    players:{ [playerName]: playerSecret },
+    turn: playerName
   });
-}
+  joinRoomFunc(code);
+};
 
-function listenRoom(){
-  const roomRef=db.ref('rooms/'+roomCode);
-  roomRef.on('value',snap=>{
-    const data=snap.val();
+// Join room
+joinBtn.onclick = async ()=>{
+  if(!nameInput.value) return alert("Masukkan nama!");
+  const code = roomInput.value.trim();
+  const snap = await ref(db,"rooms/"+code).get();
+  playerName = nameInput.value;
+  playerSecret = generateSecret();
+  await set(ref(db,"rooms/"+code+"/players/"+playerName), playerSecret);
+  joinRoomFunc(code);
+};
+
+// === Join Room Function ===
+function joinRoomFunc(code){
+  currentRoom = code;
+  roomCodeDisplay.textContent = code;
+  lobbyDiv.style.display = "none";
+  gameDiv.style.display = "block";
+
+  const roomRef = ref(db,"rooms/"+code);
+
+  onValue(roomRef, snap=>{
+    const data = snap.val();
     if(!data) return;
-    currentPlayer=data.turn;
-    // Update UI, history, dll
-    // Bisa swap giliran, update tebakan, dsb
+    log("Pemain di room: "+Object.keys(data.players).join(", "));
   });
+
+  // Send guess
+  sendGuess.onclick = async ()=>{
+    const guess = guessInput.value.trim();
+    if(guess.length!==4) return showAnnounce("Tebakan harus 4 angka unik!");
+    const roomSnap = await ref(db,"rooms/"+code).get();
+    const roomData = roomSnap.val();
+    // Realtime push guess
+    await push(ref(db,"rooms/"+code+"/guesses"), { player: playerName, guess });
+    log(playerName+" menebak: "+guess);
+    guessInput.value="";
+  };
+
+  // Feedback buttons
+  feedbackBtns.forEach(btn=>{
+    btn.onclick = async ()=>{
+      const count = Number(btn.textContent);
+      if(isNaN(count)) return;
+      await push(ref(db,"rooms/"+code+"/feedbacks"), { player: playerName, match: count });
+      showAnnounce("Feedback "+count+" terkirim!");
+    };
+  });
+
+  // Surrender
+  surrenderBtn.onclick = async ()=>{
+    if(confirm("Apakah kamu yakin menyerah?")){
+      await update(ref(db,"rooms/"+code), { status:"ended", winner: "bot/other" });
+      showAnnounce("😞 Kamu kalah!");
+    }
+  };
 }
-
-function sendGuess(g){
-  const roomRef=db.ref('rooms/'+roomCode+'/history');
-  roomRef.push({player:playerName, guess:g, feedback:null});
-  // notifikasi lawan untuk kasih feedback
-}
-
-function giveFeedbackRealtime(guess, feedback){
-  const ref=db.ref('rooms/'+roomCode+'/history');
-  // update feedback sesuai tebakan lawan
-}
-
-/* End Screen */
-function end(msg){document.getElementById('endMsg').textContent=msg; show('endScreen');}
-
-/* Lightbox */
-function openLightbox(img){document.getElementById('lightboxImg').src=img.src;document.getElementById('lightbox').style.display='flex';}
-
-/* Auto-pindah fokus */
-[g1,g2,g3,g4].forEach((i,idx)=>i.addEventListener('input',()=>{if(i.value.length===1 && idx<3)[g1,g2,g3,g4][idx+1].focus();}));
 </script>
 </body>
 </html>
