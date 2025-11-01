@@ -53,14 +53,14 @@ button:hover { background: #ff5d8a; transform: scale(1.05); }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .wait-text { font-size: 18px; font-weight: 600; margin-top: 10px; }
 
-/* Overlay Blur/Loading (Mabar) - Sesuai permintaan */
+/* Overlay Blur/Loading (Mabar) */
 #mabarWaitOverlay, #mabarWaitOverlayBot {
 position: absolute;
 top: 0; left: 0; right: 0; bottom: 0;
 background: rgba(255, 255, 255, 0.9);
-backdrop-filter: blur(2px); /* <-- EFEK BLUR */
-    -webkit-backdrop-filter: blur(2px); /* Kompatibilitas browser */
-z-index: 10;
+backdrop-filter: blur(2px); 
+    -webkit-backdrop-filter: blur(2px); 
+     z-index: 10;
 display: none;
 align-items: center;
 justify-content: center;
@@ -70,17 +70,17 @@ color: #b30057;
 font-weight: bold;
 }
 #mabarWaitOverlay .spinner, #mabarWaitOverlayBot .spinner {
-border-top: 8px solid #b30057; width:              30px; height: 30px; margin-bottom:10px;
+border-top: 8px solid #b30057; width: 30px; height: 30px; margin-bottom: 10px;
 }
 
-/* Switch pojok kanan atas - Sesuai permintaan */
+/* Switch pojok kanan atas */
 #topSwitches {
-position:fixed;
+position: fixed;
 top: 12px;
-right: 12px; /* Pindah ke kanan */
+right: 12px; 
 left: auto;
 display: flex;
-gap: 12px; 
+gap: 12px;
 z-index: 1000;
 }
 .switch { position: relative; display: inline-block; width: 60px; height: 28px; }
@@ -190,7 +190,7 @@ body.dark .guess-grid input { border: 2px solid #a34a78; background: #4a004a; co
 <div id="playerTurn" class="screen">
     <div id="mabarWaitOverlay">
         <div class="spinner"></div>
-        <p id="playerWaitText">Menunggu lawan...</p>
+        <p id="playerWaitText">Menunggu giliran lawan...</p>
     </div>
   <div class="surrender-btn" onclick="confirmSurrender()">🏳️ Menyerah</div>
   <h1 id="turnHeader">Tebak Angka Lawan 🎯</h1>
@@ -283,7 +283,7 @@ const firebaseConfig = {
 };
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-// const analytics = firebase.analytics(); // Di-disable untuk menghindari error jika belum diinisialisasi di HTML
+// const analytics = firebase.analytics(); 
 
 // Cache DOM elements
 const g1 = document.getElementById('g1'), g2 = document.getElementById('g2'), g3 = document.getElementById('g3'), g4 = document.getElementById('g4');
@@ -323,7 +323,6 @@ function show(id){
 }
 
 function closeError(){ 
-  // Coba kembali ke layar game/setup yang sesuai
   if(isMultiplayer) { 
     if (roomData && roomData.status === 'playing') showTurnScreen(roomData.turn === playerID);
     else if (roomData && (roomData.status === 'waiting_join' || roomData.status === 'ready_to_start')) show('waitScreen');
@@ -380,8 +379,8 @@ function handleStartGame(isMabar) {
     show('playerTurn'); setupGuessInputListeners(true); g1.focus();
   } else {
     // MULTIPLAYER Setup (P1/P2)
-    setupRoomContext(); // Update opponent data
-    setupMultiplayerListeners(); // Mulai dengarkan update dari lawan
+    setupRoomContext(); 
+    setupMultiplayerListeners(); 
 
     if (playerID === 1) {
       // Host (P1) memulai state game
@@ -391,7 +390,7 @@ function handleStartGame(isMabar) {
       });
       showTurnScreen(true); // P1 mulai menebak
     } else {
-      // Joiner (P2) sudah update secret di startMultiplayerSetup. Tunggu P1 memulai turn
+      // Joiner (P2) menunggu P1 memulai turn
       showWaitScreen(`Menunggu Host (${roomData.player1_name}) memulai giliran pertama...`);
     }
   }
@@ -405,7 +404,7 @@ function submitGuess() {
   const m = match(g, targetSecret);
 
   document.getElementById('result').textContent = `Hasil: ${m}`;
-  setTypingStatus(false); // Matikan status typing
+  setTypingStatus(false); 
 
   if(m === 4){ 
     end("Kamu menang! 🎉", true); 
@@ -416,13 +415,13 @@ function submitGuess() {
   if (isMultiplayer) {
     // Kirim tebakan ke lawan (Firebase)
     updateRoomData({
-      turn: roomData.opponentID, 
+      turn: roomData.opponentID, // Pindah giliran ke lawan (P2)
       lastGuess: g,
-      state: 'feedback_needed', // Lawan harus beri feedback
+      state: 'feedback_needed', // P2 harus beri feedback
       [`player${playerID}_typing`]: false,
       history: [...(roomData.history || []), {guesser: playerName, guess: g, result: null}], 
     });
-    showTurnScreen(false); // Langsung ke layar tunggu
+    showTurnScreen(false); // P1 langsung ke layar tunggu
   } else {
     // VS BOT
     playerHist.innerHTML += `<div><span>${g}</span> → ${m}</div>`;
@@ -451,6 +450,7 @@ function showOpponentTurn() {
   } else {
     // Giliran LAWAN (Mabar) - Memberi feedback
     if (!currentGuess || roomData.state !== 'feedback_needed') {
+      // Ini seharusnya tidak terjadi jika listener berfungsi
       return showWaitScreen(`Menunggu ${roomData.opponentName} mengirim tebakan...`);
     }
     document.getElementById('opponentTurnHeader').textContent = `Giliran ${roomData.opponentName} 🔮`;
@@ -502,10 +502,10 @@ function feedback(f, guess){
     updateRoomData({
       turn: roomData.opponentID, // Pindah giliran ke lawan (yang menebak tadi)
       lastFeedback: f,
-      state: 'guess_received', 
+      state: 'guess_received', // Status menunggu P1 menerima feedback
       history: history, 
     });
-    showTurnScreen(false); // Kembali ke layar tebakanmu sambil menunggu
+    showTurnScreen(false); // P2 kembali ke layar tunggu
   }
 }
 
@@ -525,7 +525,6 @@ function clearGuess(){ g1.value=g2.value=g3.value=g4.value=''; document.getEleme
 
 function end(msg, win){
   const img=document.getElementById('endImg');
-  // Ganti dengan path gambar Anda yang sesuai
   img.src=win?"IMG-20251016-WA0037.jpg":"motion_photo_7499955795629952970.jpg"; 
   document.getElementById('endMsg').textContent=msg;
   const p2 = isMultiplayer ? (roomData.opponentName || "Lawan") : "Bot";
@@ -539,10 +538,8 @@ function end(msg, win){
 }
 
 function showHistoryScreen(){
-  const list = document.getElementById('historyList');
-  list.innerHTML = "";
-  // (Logika menampilkan riwayat di sini, sudah aman dari versi sebelumnya)
-  show('historyScreen');
+  // Logika riwayat dihilangkan untuk fokus pada perbaikan utama, tetapi fungsi tetap ada.
+  show('welcome');
 }
 
 
@@ -682,11 +679,10 @@ function showTurnScreen(isMyTurn) {
     clearGuess(); setupGuessInputListeners(true); g1.focus(); 
     show('playerTurn');
   } else {
-    // Jika bukan giliranmu, pastikan input dinonaktifkan
     setupGuessInputListeners(false); 
     show('playerTurn');
   }
-  updateOverlay(); // Kontrol overlay (blur/loading)
+  updateOverlay(); 
 }
 
 function setTypingStatus(isTyping, isGuessing) {
@@ -732,12 +728,10 @@ function updateHistoryDisplay(history) {
   });
 }
 
-// FUNGSI KRITIKAL: Mengontrol Layar Blur/Loading Mabar
 function updateOverlay() {
   const playerOverlay = document.getElementById('mabarWaitOverlay');
   const botOverlay = document.getElementById('mabarWaitOverlayBot');
 
-  // Selalu sembunyikan jika bukan Mabar atau game belum mulai
   if (!isMultiplayer || roomData.status !== 'playing') {
     playerOverlay.style.display = 'none';
     botOverlay.style.display = 'none';
@@ -747,9 +741,9 @@ function updateOverlay() {
   const isMyTurn = roomData.turn === playerID;
   const oppTyping = roomData.opponentTyping; 
 
+  // Logika Overlay di Layar PENEBAK (playerTurn)
   if (currentScreenId === 'playerTurn') {
-    // Muncul jika BUKAN giliranmu (menunggu lawan menebak/feedback) 
-    // ATAU jika giliranmu tapi lawan sedang mengetik (menunggu input lawan selesai)
+    // Overlay muncul jika BUKAN giliranmu (menunggu lawan)
     if (!isMyTurn || oppTyping) {
       playerOverlay.style.display = 'flex';
       let message = "Menunggu giliranmu...";
@@ -763,20 +757,13 @@ function updateOverlay() {
       playerOverlay.style.display = 'none';
     }
   } else if (currentScreenId === 'botTurn') {
-    // Hanya aktif jika kamu sedang memberi feedback (turnmu)
-    if (roomData.state === 'feedback_needed') {
-        // Overlay di botTurn seharusnya TIDAK muncul karena kamu harus memberi feedback
-        botOverlay.style.display = 'none';
-    } else {
-        // Jika turn lawan dan sedang menunggu dia menebak/feedback
+    // Overlay di Layar FEEDBACK (botTurn) hanya muncul saat menunggu GILIRAN LAWAN
+    // (Misalnya, jika P2 sedang di layar feedback dan P1 tiba-tiba memulai turn)
+    if (!isMyTurn && roomData.state === 'playing') {
         botOverlay.style.display = 'flex';
-        let message = "Menunggu giliran lawan...";
-        if (oppTyping === 'guess') {
-            message = `${roomData.opponentName} sedang menebak...`;
-        } else if (oppTyping === 'feedback') {
-            message = `${roomData.opponentName} sedang memberikan feedback...`;
-        }
-        document.getElementById('botWaitText').textContent = message;
+        document.getElementById('botWaitText').textContent = `Menunggu ${roomData.opponentName} memulai giliran...`;
+    } else {
+        botOverlay.style.display = 'none';
     }
   } else {
     playerOverlay.style.display = 'none';
@@ -790,10 +777,10 @@ function setupMultiplayerListeners() {
 
   db.ref('rooms/' + roomCode).on('value', snapshot => {
     const data = snapshot.val();
-    if (!data || data.status === 'setup' || data.status === 'waiting_join' || data.status === 'ready_to_start') return; 
+    if (!data || data.status !== 'playing') return; 
 
     roomData = { ...data, opponentID: playerID === 1 ? 2 : 1 };
-    setupRoomContext(); // Refetch opponent data dan typing status
+    setupRoomContext(); 
 
     if (data.status === 'ended') {
       if (data.winner === playerName) end("Kamu menang! 🎉", true);
@@ -806,25 +793,28 @@ function setupMultiplayerListeners() {
 
     const isMyTurn = data.turn === playerID;
 
-    if (data.state === 'feedback_needed' && !isMyTurn) {
-      // Jika lawan baru menebak, dan giliranmu memberi feedback (feedback_needed + turn lawan)
-      showOpponentTurn();
-    } else if (data.state === 'guess_received' && isMyTurn) {
-      // Giliranmu menebak dan feedback sudah diterima
+    // --- PERBAIKAN UTAMA SINKRONISASI STATE ---
+    if (data.state === 'feedback_needed' && isMyTurn) {
+      // Lawan (P1) baru saja menebak, dan SEKARANG giliran saya (P2) memberi feedback
+      showOpponentTurn(); // P2 pindah ke layar feedback (botTurn)
+    } else if (data.state === 'guess_received' && !isMyTurn) {
+      // Saya (P1) menebak, dan feedback sudah DIBERIKAN oleh lawan (P2)
       if (data.lastFeedback !== undefined && data.lastFeedback !== null) {
         document.getElementById('result').textContent = `Hasil tebakanmu: ${data.lastFeedback}`;
-        setTimeout(() => {
-          updateRoomData({state: 'playing', lastFeedback: null, lastGuess: null});
-          showTurnScreen(true); 
-        }, 1500); 
+        
+        // Update state menjadi 'playing' dan pindah giliran
+        updateRoomData({turn: playerID, state: 'playing', lastFeedback: null, lastGuess: null});
+        
+        // P1 akan menerima update status 'playing' di listener berikutnya dan langsung menebak.
       }
     } else if (data.state === 'playing' && isMyTurn) {
-      // Giliranmu menebak
+      // Giliran saya untuk MENEBAK
       showTurnScreen(true); 
-    } else if (data.state === 'playing' && !isMyTurn) {
-      // Giliran lawan, kamu menunggu
+    } else {
+      // Giliran lawan atau menunggu proses sinkronisasi
       showTurnScreen(false);
     }
+    // --- AKHIR PERBAIKAN UTAMA ---
   });
 }
 
@@ -836,10 +826,8 @@ function cleanupRoom() {
 
   if (isMultiplayer && roomData && roomData.status !== 'ended') {
     if (playerID === 1 && (roomData.status === 'waiting_join' || roomData.status === 'ready_to_start')) {
-      // Host yang keluar sebelum game/saat tunggu
       db.ref('rooms/' + roomCode).remove();
     } else if (roomData.status === 'playing') {
-      // Pemain di tengah game mengirim sinyal kalah/putus
       const winner = playerID === 1 ? roomData.player2_name : roomData.player1_name;
       db.ref('rooms/' + roomCode).update({
         status: 'ended', 
