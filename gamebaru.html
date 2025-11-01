@@ -42,6 +42,7 @@ button:hover { background: #ff5d8a; transform: scale(1.05); }
 .join-input { width: 70%; padding: 10px; font-size: 18px; border: 2px solid #ffcce0; border-radius: 10px; text-align: center; margin-bottom: 10px; }
 
 /* Waiting screen styles */
+/* Catatan: #waitScreen digunakan untuk layar tunggu sebelum game mulai. */
 #waitScreen { background: linear-gradient(135deg, #e6f0ff, #d7e5ff); color: #0057b3; }
 #waitScreen h1 { color: #0057b3; }
 .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #b30057; border-radius: 50%; width: 50px; height: 50px; animation: spin 1.5s linear infinite; margin: 20px auto; }
@@ -49,6 +50,7 @@ button:hover { background: #ff5d8a; transform: scale(1.05); }
 .wait-text { font-size: 18px; font-weight: 600; margin-top: 10px; }
 
 /* Overlay Wait (Tulisan 'Wait' saat lawan mengetik/feedback) */
+/* Digunakan di dalam div.screen untuk tampilan blur/loading yang lebih baik */
 #mabarWaitOverlay, #mabarWaitOverlayBot {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -66,11 +68,12 @@ button:hover { background: #ff5d8a; transform: scale(1.05); }
 #mabarWaitOverlay .spinner, #mabarWaitOverlayBot .spinner { border-top: 8px solid #b30057; width: 30px; height: 30px; margin-bottom: 10px;}
 
 
-/* ===== Switch pojok kiri atas (dirapikan) ===== */
+/* ===== Switch pojok kanan atas (Perubahan Sesuai Permintaan) ===== */
 #topSwitches { 
     position: fixed; 
     top: 12px; 
-    left: 12px; 
+    right: 12px; /* Pindah ke kanan */
+    left: auto;
     display: flex; 
     gap: 12px; /* Jarak antar switch */
     z-index: 1000; 
@@ -560,8 +563,8 @@ function end(msg, win){
   if (isMultiplayer && roomData) {
     p1Name = roomData.player1_name || "Pemain 1";
     p2Name = roomData.player2_name || "Pemain 2";
-    p1Secret = roomData.player1_secret || "----";
-    p2Secret = roomData.opponentSecret || "----"; // Ambil opponentSecret yang sudah di set
+    p1Secret = playerSecret; // Angka rahasia pemain ini
+    p2Secret = roomData.opponentSecret || "----"; // Angka rahasia lawan
   } else {
     p1Name = playerName;
     p2Name = "Bot";
